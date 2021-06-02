@@ -1,9 +1,20 @@
 import numpy as np
-import matplotlib as plt
+import matplotlib.pyplot as plt
 import tiblib.validation as val
 import tiblib.Classifier as cl
 from tiblib.blueprint import Faucet
 from tiblib.preproc import StandardScaler
+
+attributes = [
+    "Mean of the integrated profile",
+    "Standard deviation of the integrated profile",
+    "Excess kurtosis of the integrated profile",
+    "Skewness of the integrated profile",
+    "Mean of the DM-SNR curve",
+    "Standard deviation of the DM-SNR curve",
+    "Excess kurtosis of the DM-SNR curve",
+    "Skewness of the DM-SNR curve"
+]
 
 
 def get_pulsar_data(path_train="Data/Train.txt", path_test="Data/Test.txt", labels=False):
@@ -15,7 +26,7 @@ def get_pulsar_data(path_train="Data/Train.txt", path_test="Data/Test.txt", labe
         return train_data, test_data
 
 
-def main():
+def test_random_models():
     train, train_labels, test, test_labels = get_pulsar_data(labels=True)
     model: Faucet
     whitener = StandardScaler()
@@ -27,5 +38,16 @@ def main():
         print(f"Model: {type(model).__name__}, err_rate: {conf_matrix}")
 
 
+def plot_data_exploration():
+    train, train_labels, test, test_labels = get_pulsar_data(labels=True)
+    fig, axes = plt.subplots(train.shape[1], 1, figsize=(10, 15))
+    for i in range(train.shape[1]):
+        axes[i].hist(train[:, i][train_labels == 0], bins=50, density=True, alpha=0.5)
+        axes[i].hist(train[:, i][train_labels == 1], bins=50, density=True, alpha=0.5)
+        axes[i].title.set_text(attributes[i])
+    fig.tight_layout()
+    fig.show()
+
+
 if __name__ == "__main__":
-    main()
+    plot_data_exploration()
