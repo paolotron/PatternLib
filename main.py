@@ -47,6 +47,12 @@ def plot_data_exploration():
         axes[i].title.set_text(attributes[i])
     fig.tight_layout()
     fig.show()
+    fig, axes = plt.subplots(1, train.shape[1], figsize=(10, 10))
+    for i in range(train.shape[1]):
+        axes[i].boxplot(train[:, i][train_labels == 0])
+        axes[i].boxplot(train[:, i][train_labels == 1])
+    fig.tight_layout()
+    fig.show()
 
 
 if __name__ == "__main__":
