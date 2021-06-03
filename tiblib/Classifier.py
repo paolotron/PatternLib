@@ -4,6 +4,7 @@ from .blueprint import *
 import numpy as np
 from .probability import GAU_ND_logpdf
 from .preproc import get_cov
+import probability as pr
 import tiblib
 from scipy.optimize import fmin_l_bfgs_b
 
@@ -271,6 +272,35 @@ class SVM(Faucet):
 
     def get_gap(self):
         return self.dual_gap[0] * 2
+
+    def fit_predict(self, x, y):
+        pass
+
+
+class GaussianMixture(Faucet):
+
+    def __init__(self, alpha, N=2, tied=False, diag=False, psi=None):
+        self.alpha = alpha
+        self.N = N
+        self.tied = tied
+        self.psi = psi
+        self.gmm_est = {}
+        self.diag = diag
+
+    def fit(self, x, y):
+        for label in np.unique(y):
+            elem = x[y == label, :].T
+            post = elem.shape[1] / x.shape[0]
+            estimate = pr.LGB_estimation(elem, posterior=post, alpha=self.alpha, n=self.N,
+                                         psi=self.psi, tied=self.tied, diag=self.diag)
+            self.gmm_est[label] = estimate
+
+    def predict(self, x, return_prob=False):
+        res = []
+        for label in self.gmm_est:
+            res.append(pr.logpdf_GMM(x.T, self.gmm_est[label]))
+        log_matr = np.vstack(res)
+        return np.argmax(log_matr, axis=0)
 
     def fit_predict(self, x, y):
         pass
