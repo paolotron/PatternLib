@@ -1,9 +1,12 @@
 import numpy as np
 import matplotlib.pyplot as plt
+
+import tiblib
 import tiblib.validation as val
 import tiblib.Classifier as cl
 from tiblib.blueprint import Faucet
 from tiblib.preproc import StandardScaler
+import sklearn.datasets
 
 attributes = [
     "Mean of the integrated profile",
@@ -54,6 +57,33 @@ def plot_data_exploration():
     fig.tight_layout()
     fig.show()
 
+def load_iris_binary():
+    D, L = sklearn.datasets.load_iris()['data'], sklearn.datasets.load_iris()['target']
+    D = D[L != 0, :]
+    L = L[L != 0]
+    L[L == 2] = 0
+    return D, L
+
+
+def test_svm():
+    data, label = load_iris_binary()
+    DTR, LTR, DTE, LTE = val.train_test_split(data, label, 2 / 3)
+    for hyper in [(1, 0.1), (1, 1.), (1, 10.), (10, 0.1), (10, 1.), (10, 10.)]:
+        model = tiblib.Classifier.SVM(*hyper)
+        model.fit(DTR, LTR)
+        prediction = model.predict(DTE)
+        print(
+            f"K: {hyper[0]} C: {hyper[1]} PrimalLoss: {model.primal} DualityGap: {model.get_gap()} error rate: {val.err_rate(prediction, LTE)}")
+
+    for hyper in [(0, 1, "Poly", (2, 0)), (1, 1, "Poly", (2, 0)), (0, 1, "Poly", (2, 1)), (1, 1, "Poly", (2, 1)),
+                  (0, 1, "Radial", (1,)), (0, 1, "Radial", (10,)), (1, 1, "Radial", (1,)), (1, 1, "Radial", (10,))]:
+        model = tiblib.Classifier.SVM(*hyper)
+        model.fit(DTR, LTR)
+        prediction = model.predict(DTE)
+        print(f"K: {hyper[0]}, C: {hyper[1]}, Ker: {hyper[2]}, {hyper[3]}, err: {val.err_rate(prediction, LTE)}")
+
 
 if __name__ == "__main__":
-    plot_data_exploration()
+    test_svm()
+
+
