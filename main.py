@@ -57,6 +57,7 @@ def plot_data_exploration():
     fig.tight_layout()
     fig.show()
 
+
 def load_iris_binary():
     D, L = sklearn.datasets.load_iris()['data'], sklearn.datasets.load_iris()['target']
     D = D[L != 0, :]
@@ -67,7 +68,7 @@ def load_iris_binary():
 
 def test_svm():
     data, label = load_iris_binary()
-    DTR, LTR, DTE, LTE = val.train_test_split(data, label, 2 / 3)
+    DTR, LTR, DTE, LTE = val.train_test_split(data, label, 2/3)
     for hyper in [(1, 0.1), (1, 1.), (1, 10.), (10, 0.1), (10, 1.), (10, 10.)]:
         model = tiblib.Classifier.SVM(*hyper)
         model.fit(DTR, LTR)
