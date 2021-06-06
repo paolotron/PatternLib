@@ -222,57 +222,51 @@ class SVM(Faucet):
         self.alpha = None
 
     def fit(self, x, y):
-        z = np.where(y, -1, 1).reshape(-1, 1)
-        D = np.vstack([x.T, self.K * np.ones((1, x.shape[0]))])
-        H = z.T * (z * (self.kernel(x, x)))
+        self.x = x.T
+        DTR = x.T
+        z = np.where(y == 1, 1, -1)
         self.z = z
-        self.x = x
+        DTRc = np.row_stack((DTR, self.K * np.ones(DTR.shape[1])))
 
-        def obj_fun(vect):
-            alpha = vect.reshape(-1, 1)
-            L = 0.5 * alpha.T @ H @ alpha - np.sum(alpha)
-            grad = (H @ alpha - 1).reshape(-1, )
-            L = L.reshape(-1, )
-            return L, grad
+        x0 = np.zeros(DTR.shape[1])
+        bounds = [(0, self.C) for _ in range(DTR.shape[1])]
 
-        init_alpha = np.ones((H.shape[0],))
-        bounds = [(0, self.C) for _ in range(H.shape[0])]
-        m, self.primal, _ = fmin_l_bfgs_b(obj_fun, init_alpha, bounds=bounds, approx_grad=False)
+        G = self.kernel(DTR, DTR)
+        H = G * z.reshape(z.shape[0], 1)
+        H = H * z
+
+        def SVM_dual_kernel_obj(v):
+            a = v
+            J1 = a.T @ H @ a / 2
+            J2 = - a.T @ np.ones(a.shape)
+            grad = H @ a - np.ones(a.shape)
+            return J1 + J2, grad.reshape(DTRc.shape[1])
+
+        m, self.primal, _ = fmin_l_bfgs_b(SVM_dual_kernel_obj, x0, bounds=bounds)
         self.alpha = m
-        res = np.sum(m * z.T * D, axis=1)
+        res = np.sum(m * z.T * DTRc, axis=1)
         self.W = res[:-1]
         self.b = res[-1]
         self.w_cap = res
 
-        const = 0.5 * (res * res).sum()
-        decision = self.W @ x.T + self.b * self.K
-        tt = np.vstack([1 - z.T * decision, np.zeros(D.shape[1])])
-        temp_max = np.max(tt, axis=0)
-        primal_obj = const + self.C * np.sum(temp_max)
-        primal_obj_func = obj_fun(m)[0]
-        self.dual_gap = primal_obj_func + primal_obj
-
     def kernel(self, xi, xj):
         if self.ker is None:
-            return xi @ xj.T + self.K
+            return xi.T @ xj
         if self.ker == "Poly":
-            return np.power(xi @ xj.T + self.paramker[1], self.paramker[0]) + self.K**2
+            return np.power(xi.T @ xj + self.paramker[1], self.paramker[0]) + self.K ** 2
         if self.ker == "Radial":
-            res = []
-            for line in xi:
-                res.append(np.exp(-self.paramker[0] * np.linalg.norm(line-xj, 2, axis=1)**2))
-            return np.vstack(res)
+            a = np.repeat(xi, xj.shape[1], axis=1)
+            b = np.tile(xj, xi.shape[1])
+            m = (np.linalg.norm(a - b, axis=0) ** 2).reshape((xi.shape[1], xj.shape[1]))
+            return np.exp(-self.paramker[0] * m) + self.K**2
 
     def predict(self, x):
         if self.ker is None:
-            score = self.W @ x.T + self.b
+            score = self.W.T @ x.T + self.b * self.K
         else:
-            ker_res = self.kernel(self.x, x)
-            score = np.sum(self.alpha.reshape(-1, 1) * self.z * ker_res, axis=0)
-        return np.where(score > 0, 0, 1)
-
-    def get_gap(self):
-        return self.dual_gap[0] * 2
+            eval_mat = (self.alpha * self.z) @ self.kernel(self.x, x.T)
+            score = np.where(eval_mat > 0, 1, 0)
+        return np.where(score > 0, 1, 0)
 
     def fit_predict(self, x, y):
         pass
