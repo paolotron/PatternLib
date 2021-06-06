@@ -180,3 +180,7 @@ def get_cov(x: np.ndarray, rt_mean=False):
         return (x - mu).T @ (x - mu) / M, mu
     else:
         return (x - mu).T @ (x - mu) / M
+
+
+def get_z_score(x: np.ndarray):
+    return (x-np.mean(x))/np.std(x)

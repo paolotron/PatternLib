@@ -6,7 +6,6 @@ import tiblib.validation as val
 import tiblib.Classifier as cl
 from tiblib.blueprint import Faucet
 from tiblib.preproc import StandardScaler
-import sklearn.datasets
 
 attributes = [
     "Mean of the integrated profile",
@@ -57,6 +56,7 @@ def plot_data_exploration():
         axes[i].boxplot(train[:, i][train_labels == 1])
     fig.tight_layout()
     fig.show()
+
 
 if __name__ == "__main__":
     test_random_models()
