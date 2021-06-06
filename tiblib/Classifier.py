@@ -46,10 +46,12 @@ class Perceptron(Faucet):
         self.weights = np.vstack(lis).T
         return self
 
-    def predict(self, x):
+    def predict(self, x, return_prob=False):
         one = np.ones((x.shape[0], 1))
         x = np.hstack([one, x]).T
         y = self.weights.T @ x
+        if return_prob:
+            return y
         return self.labels[np.argmax(y, axis=0)]
 
     def fit_predict(self, x, y):
@@ -71,7 +73,7 @@ class GaussianClassifier(Faucet):
             self.estimates.append((label, np.mean(matrix, 0), tiblib.preproc.get_cov(matrix), count / x.shape[0]))
         return self
 
-    def predict(self, x, get_prob=False):
+    def predict(self, x, return_prob=False):
         scores = []
         for label, mu, cov, prob in self.estimates:
             scores.append(tiblib.probability.GAU_ND_logpdf(x.T, mu.reshape(-1, 1), cov) + np.log(prob))
@@ -79,7 +81,7 @@ class GaussianClassifier(Faucet):
         logsum = scipy.special.logsumexp(SJoint, axis=1)
         self.Spost = SJoint - logsum.reshape(1, -1).T
         res = np.argmax(self.Spost, axis=1)
-        return res if not get_prob else np.exp(self.Spost)
+        return res if not return_prob else np.exp(self.Spost)
 
     def fit_predict(self, x, y):
         self.fit(x, y)
@@ -123,12 +125,12 @@ class MultiNomial(Faucet):
             arr_list.append(arr)
         self.estimate = np.vstack(arr_list)
 
-    def predict(self, x, get_prob=False):
+    def predict(self, x, return_prob=False):
         sjoint = x @ self.estimate.T
         logsum = scipy.special.logsumexp(sjoint, axis=1)
         self.Spost = sjoint - logsum.reshape(-1, 1)
         res = self.labels[np.argmax(x @ self.estimate.T, axis=1)]
-        return res if not get_prob else np.exp(self.Spost)
+        return res if not return_prob else np.exp(self.Spost)
 
     def fit_predict(self, x, y):
         self.fit(x, y)
@@ -190,15 +192,15 @@ class LogisticRegression(Faucet):
         self.w = m[:, :-1]
         self.b = m[:, -1].reshape(-1, 1)
 
-    def predict(self, x, score=False):
+    def predict(self, x, return_prob=False):
         if self.w is None:
             raise NoFitError()
         if self.binary:
             sc = self.w @ x.T + self.b
-            return sc if score else sc > 0
+            return sc if return_prob else sc > 0
         else:
             sc = self.w @ x.T + self.b
-            return sc if score else np.argmax(sc, axis=0)
+            return sc if return_prob else np.argmax(sc, axis=0)
 
     def fit_predict(self, x, y):
         return self.predict(self.fit(x, y))
@@ -260,7 +262,7 @@ class SVM(Faucet):
             m = (np.linalg.norm(a - b, axis=0) ** 2).reshape((xi.shape[1], xj.shape[1]))
             return np.exp(-self.paramker[0] * m) + self.K**2
 
-    def predict(self, x):
+    def predict(self, x, return_prob=False):
         if self.ker is None:
             score = self.W.T @ x.T + self.b * self.K
         else:
@@ -295,6 +297,8 @@ class GaussianMixture(Faucet):
         for label in self.gmm_est:
             res.append(pr.logpdf_GMM(x.T, self.gmm_est[label]))
         log_matr = np.vstack(res)
+        if return_prob:
+            return log_matr
         return np.argmax(log_matr, axis=0)
 
     def fit_predict(self, x, y):
