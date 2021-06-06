@@ -34,11 +34,13 @@ def test_random_models():
     whitener = StandardScaler()
     whitener.fit(train, None)
     for model in (cl.LogisticRegression(norm_coeff=0.1), cl.GaussianClassifier(), cl.TiedGaussian(), cl.NaiveBayes(),
-                  cl.GaussianMixture(alpha=0.1), cl.SVM(ker="Radial")):
+                  cl.GaussianMixture(alpha=0.1), cl.SVM(ker="Poly", paramker=[2, 1])):
         model.fit(whitener.transform(train), train_labels)
         prediction = model.predict(whitener.transform(test))
-        conf_matrix = val.err_rate(prediction, test_labels)
-        print(f"Model: {type(model).__name__}, err_rate: {conf_matrix}")
+        err_rate = val.err_rate(prediction, test_labels)
+        print(f"Model: {type(model).__name__}\n\tError rate:", "{:.4f}".format(err_rate))
+        _ = val.confusion_matrix(prediction, test_labels, print_cm=True)
+
 
 
 def plot_data_exploration():
