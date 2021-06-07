@@ -67,6 +67,7 @@ class GaussianClassifier(Faucet):
         self.Spost = None
 
     def fit(self, x, y):
+        self.estimates = []
         un, con = np.unique(y, return_counts=True)
         for label, count in zip(un, con):
             matrix = x[y == label, :]
@@ -285,6 +286,7 @@ class GaussianMixture(Faucet):
         self.diag = diag
 
     def fit(self, x, y):
+        self.gmm_est = {}
         for label in np.unique(y):
             elem = x[y == label, :].T
             post = elem.shape[1] / x.shape[0]
