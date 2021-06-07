@@ -52,32 +52,66 @@ def kfold_test():
     preprocessing_pipe_list = [
         pip.Pipeline([prep.StandardScaler()]),
         pip.Pipeline([prep.StandardScaler(), prep.Pca(train.shape[1])]),
-        pip.Pipeline([prep.StandardScaler(), prep.Pca(train.shape[1] - 1)]),
+        pip.Pipeline([prep.StandardScaler(), prep.Pca(train.shape[1] - 4)]),
         pip.Pipeline([prep.StandardScaler(), prep.Lda(train.shape[1])]),
         pip.Pipeline([prep.StandardScaler(), prep.Lda(train.shape[1] - 1)]),
         pip.Pipeline([prep.StandardScaler(), prep.Pca(train.shape[1]), prep.Lda(train.shape[1])]),
         pip.Pipeline([prep.StandardScaler(), prep.Pca(train.shape[1] - 1), prep.Lda(train.shape[1] - 1)]),
     ]
     K = 5
+
+    # Gaussian
     for pipe in preprocessing_pipe_list:
-        for hyper in val.grid_search({'norm_coeff': [1, 1000, 2]}):
+        model = cl.GaussianClassifier()
+        pipe.add_step(model)
+        dcf, err_rate = k_test(pipe, train, train_labels, 5)
+        pipe.rem_step()
+        print("Gaussian", " error rate: ", err_rate, " ", pipe)
+        print("\tmean min_DCF: ", dcf / K)
+    # Naive Bayes
+    for pipe in preprocessing_pipe_list:
+        model = cl.NaiveBayes()
+        pipe.add_step(model)
+        dcf, err_rate = k_test(pipe, train, train_labels, 5)
+        pipe.rem_step()
+        print("Naive Bayes", " error rate: ", err_rate, " ", pipe)
+        print("\tmean min_DCF: ", dcf / K)
+    # Tied Gaussian
+    for pipe in preprocessing_pipe_list:
+        model = cl.TiedGaussian()
+        pipe.add_step(model)
+        dcf, err_rate = k_test(pipe, train, train_labels, 5)
+        pipe.rem_step()
+        print("Tied Gaussian", " error rate: ", err_rate, " ", pipe)
+        print("\tmean min_DCF: ", dcf / K)
+        #   Logistic regression
+    for pipe in preprocessing_pipe_list:
+        for hyper in val.grid_search({'norm_coeff': [0.1, 0.5, 1]}):
             model = cl.LogisticRegression(**hyper)
             pipe.add_step(model)
             dcf, err_rate = k_test(pipe, train, train_labels, 5)
             pipe.rem_step()
-            print(err_rate, " ", pipe, " ", hyper)
+            print("Logistic regression", " error rate: ", err_rate, " ", hyper, " ", pipe)
+            print("\tmean min_DCF: ", dcf / K)
+    #   Gaussian Mixture
+    for pipe in preprocessing_pipe_list:
+        for hyper in val.grid_search({'psi': [0.01, 0.001, 0.1], 'alpha': [0.1, 1, 0.01]}):
+            model = cl.GaussianMixture(**hyper)
+            pipe.add_step(model)
+            dcf, err_rate = k_test(pipe, train, train_labels, 5)
+            pipe.rem_step()
+            print("Gaussian Mixture", " error rate: ", err_rate, " ", hyper, " ", pipe)
             print("\tmean min_DCF: ", dcf / K)
 
 
-def k_test(pipe, train, train_labels, K):
+def k_test(pipe, train, train_labels, K, prior_prob=0.091):
     err_rate = 0
     dcf = 0
     for x_tr, y_tr, x_ev, y_ev in val.kfold_split(train, train_labels, K):
         pipe.fit(x_tr, y_tr)
         err_rate += val.err_rate(pipe.predict(x_ev), y_ev) / K
-        PostProb = pipe.predict(x_ev, True)
-        ratio = PostProb / (1 - PostProb)
-        dcf += prob.minDetectionCost(ratio, y_ev.astype(int)) / K
+        ratio = pipe.predict(x_ev, True)
+        dcf += prob.minDetectionCost(ratio, y_ev.astype(int), pi1=prior_prob) / K
     return dcf, err_rate
 
 
