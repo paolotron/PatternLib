@@ -63,17 +63,17 @@ def kfold_test():
         for hyper in val.grid_search({'norm_coeff': [1, 1000, 2]}):
             model = cl.LogisticRegression(**hyper)
             err_rate = 0
+            dcf = 0
             for x_tr, y_tr, x_ev, y_ev in val.kfold_split(train, train_labels, K):
                 pipe.add_step(model)
                 pipe.fit(x_tr, y_tr)
                 err_rate += val.err_rate(pipe.predict(x_ev), y_ev)/K
-                PostProb = pipe.predict(x_tr, True)
+                PostProb = pipe.predict(x_ev, True)
                 ratio = PostProb / (1 - PostProb)
-                t = prob.minDetectionCost(ratio, y_tr.astype(int))
-                print(t)
+                dcf += prob.minDetectionCost(ratio, y_ev.astype(int))
                 pipe.rem_step()
-
             print(err_rate, " ", pipe, " ", hyper)
+            print("\tmean min_DCF: ", dcf / K)
             # TODO EVALUATE SCORE
 
 
