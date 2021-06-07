@@ -49,13 +49,13 @@ def kfold_test():
     train, train_labels, test, test_labels = get_pulsar_data(labels=True)
     pipe_list: List[pip.Pipeline]
     preprocessing_pipe_list = [
-        pip.Pipeline([]),
-        pip.Pipeline([prep.Pca(train.shape[1])]),
-        pip.Pipeline([prep.Pca(train.shape[1] - 1)]),
-        pip.Pipeline([prep.Lda(train.shape[1])]),
-        pip.Pipeline([prep.Lda(train.shape[1] - 1)]),
-        pip.Pipeline([prep.Pca(train.shape[1]), prep.Lda(train.shape[1])]),
-        pip.Pipeline([prep.Pca(train.shape[1] - 1), prep.Lda(train.shape[1] - 1)]),
+        pip.Pipeline([prep.StandardScaler()]),
+        pip.Pipeline([prep.StandardScaler(), prep.Pca(train.shape[1])]),
+        pip.Pipeline([prep.StandardScaler(), prep.Pca(train.shape[1] - 1)]),
+        pip.Pipeline([prep.StandardScaler(), prep.Lda(train.shape[1])]),
+        pip.Pipeline([prep.StandardScaler(), prep.Lda(train.shape[1] - 1)]),
+        pip.Pipeline([prep.StandardScaler(), prep.Pca(train.shape[1]), prep.Lda(train.shape[1])]),
+        pip.Pipeline([prep.StandardScaler(), prep.Pca(train.shape[1] - 1), prep.Lda(train.shape[1] - 1)]),
     ]
     K = 5
     for pipe in preprocessing_pipe_list:
