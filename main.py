@@ -45,30 +45,30 @@ def test_random_models():
         _ = val.confusion_matrix(prediction, test_labels, print_cm=True)
 
 
-
 def kfold_test():
     train, train_labels, test, test_labels = get_pulsar_data(labels=True)
-    pipe = pip.Pipeline([prep.Pca(train.shape[1]-1), cl.GaussianClassifier()])
-    pipe.fit(train, train_labels)
-    print(val.err_rate(pipe.predict(test), test_labels))
     pipe_list: List[pip.Pipeline]
     preprocessing_pipe_list = [
         pip.Pipeline([]),
         pip.Pipeline([prep.Pca(train.shape[1])]),
         pip.Pipeline([prep.Pca(train.shape[1] - 1)]),
         pip.Pipeline([prep.Lda(train.shape[1])]),
-        pip.Pipeline([prep.Lda(train.shape[1]) - 1]),
+        pip.Pipeline([prep.Lda(train.shape[1] - 1)]),
         pip.Pipeline([prep.Pca(train.shape[1]), prep.Lda(train.shape[1])]),
-        pip.Pipeline([prep.Pca(train.shape[1] - 1), prep.Lda(train.shape[1])]),
-        pip.Pipeline([prep.Pca(train.shape[1] - 1), prep.Lda(train.shape[1] - 1)])
+        pip.Pipeline([prep.Pca(train.shape[1] - 1), prep.Lda(train.shape[1] - 1)]),
     ]
+    K = 5
     for pipe in preprocessing_pipe_list:
-        for x_tr, y_tr, x_ev, y_ev in val.kfold_split(train, train_labels, 5):
-            pipe.fit(x_tr, y_tr)
-
-            score = pipe.predict(x_ev, True)
+        for hyper in val.grid_search({'norm_coeff': [1, 1000, 2]}):
+            model = cl.LogisticRegression(**hyper)
+            score = 0
+            for x_tr, y_tr, x_ev, y_ev in val.kfold_split(train, train_labels, K):
+                pipe.add_step(model)
+                pipe.fit(x_tr, y_tr)
+                score += val.err_rate(pipe.predict(x_ev), y_ev)/K
+                pipe.rem_step()
+            print(score, " ", pipe, " ", hyper)
             # TODO EVALUATE SCORE
-
 
 
 if __name__ == "__main__":
