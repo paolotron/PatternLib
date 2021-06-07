@@ -155,13 +155,13 @@ def normalizedBayesRisk(conf, Cfn=1, Cfp=1, pi1=0.091):
     return B / Bdummy
 
 
-def minDetectionCost(llrs, lab, n_trys=100, pi1=0.091):
+def minDetectionCost(llrs, lab, n_trys=100, Cfn=1, Cfp=1, pi1=0.091):
     min_dcf = float('inf')
     threshold = 0
     for i in np.linspace(min(llrs), max(llrs), n_trys):
         pred = np.where(llrs > i, 1, 0)
         conf = getConfusionMatrix(pred, lab, 2)
-        r = normalizedBayesRisk(conf, pi1=pi1)
+        r = normalizedBayesRisk(conf, Cfn=Cfn, Cfp=Cfp, pi1=pi1)
         if min_dcf > r:
             min_dcf = r
             threshold = i
