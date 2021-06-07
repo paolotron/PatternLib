@@ -143,10 +143,6 @@ def getConfusionMatrix(predictions, labels, nclass):
     return conf
 
 
-def optimalBayesBinary(llrs, Cfn=1, Cfp=1, pi1=0.091):
-    return np.where(llrs > -np.log(pi1 * Cfn / ((1 - pi1) * Cfp)), 1, 0)
-
-
 def bayesRisk(conf, Cfn=1, Cfp=1, pi1=0.5):
     fnr = conf[0, 1] / (conf[0, 1] + conf[1, 1])
     fpr = conf[1, 0] / (conf[1, 0] + conf[0, 0])
@@ -159,13 +155,13 @@ def normalizedBayesRisk(conf, Cfn=1, Cfp=1, pi1=0.091):
     return B / Bdummy
 
 
-def minDetectionCost(llrs, lab, n_trys=100):
+def minDetectionCost(llrs, lab, n_trys=100, pi1=0.091):
     min_dcf = float('inf')
     threshold = 0
     for i in np.linspace(min(llrs), max(llrs), n_trys):
         pred = np.where(llrs > i, 1, 0)
         conf = getConfusionMatrix(pred, lab, 2)
-        r = normalizedBayesRisk(conf)
+        r = normalizedBayesRisk(conf, pi1=pi1)
         if min_dcf > r:
             min_dcf = r
             threshold = i
