@@ -4,6 +4,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 
 import tiblib.pipeline as pip
+import tiblib.probability as prob
 import tiblib.validation as val
 import tiblib.Classifier as cl
 import tiblib.preproc as prep
@@ -61,13 +62,18 @@ def kfold_test():
     for pipe in preprocessing_pipe_list:
         for hyper in val.grid_search({'norm_coeff': [1, 1000, 2]}):
             model = cl.LogisticRegression(**hyper)
-            score = 0
+            err_rate = 0
             for x_tr, y_tr, x_ev, y_ev in val.kfold_split(train, train_labels, K):
                 pipe.add_step(model)
                 pipe.fit(x_tr, y_tr)
-                score += val.err_rate(pipe.predict(x_ev), y_ev)/K
+                err_rate += val.err_rate(pipe.predict(x_ev), y_ev)/K
+                PostProb = pipe.predict(x_tr, True)
+                ratio = PostProb / (1 - PostProb)
+                t = prob.minDetectionCost(ratio, y_tr.astype(int))
+                print(t)
                 pipe.rem_step()
-            print(score, " ", pipe, " ", hyper)
+
+            print(err_rate, " ", pipe, " ", hyper)
             # TODO EVALUATE SCORE
 
 

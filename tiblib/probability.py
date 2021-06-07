@@ -134,3 +134,33 @@ def LGB_estimation(X, alpha: float, n: int, *, posterior=1., psi=None, tied=Fals
             new_gmm.append((gm[0]/2, gm[1]-d, gm[2]))
         gmm = EM_estimation(X, new_gmm, psi=psi, tied=tied, diag=diag, prin=prin)
     return gmm
+
+def getConfusionMatrix(predictions, labels, nclass):
+    conf = np.zeros((nclass, nclass), dtype=int)
+    for i in range(predictions.shape[0]):
+        conf[predictions[i], labels[i]] += 1
+    return conf
+
+def optimalBayesBinary(llrs, Cfn=1, Cfp=1, pi1=0.091):
+    return np.where(llrs > -np.log(pi1*Cfn/((1-pi1)*Cfp)), 1, 0)
+
+def bayesRisk(conf, Cfn=1, Cfp=1, pi1=0.5):
+    fnr = conf[0, 1] / (conf[0, 1]+conf[1, 1])
+    fpr = conf[1, 0] / (conf[1, 0]+conf[0, 0])
+    return pi1*Cfn*fnr+(1-pi1)*Cfp*fpr
+
+def normalizedBayesRisk(conf, Cfn=1, Cfp=1, pi1=0.091):
+    B = bayesRisk(conf, Cfn, Cfp, pi1)
+    Bdummy = min(pi1*Cfn, (1-pi1)*Cfp)
+    return B/Bdummy
+
+def minDetectionCost(llrs, lab):
+    min_dcf = float('inf')
+    for i in np.linspace(min(llrs), max(llrs), 100):
+        pred = np.where(llrs > i, 1, 0)
+        conf = getConfusionMatrix(pred, lab, 2)
+        r = normalizedBayesRisk(conf)
+        if min_dcf > r:
+            min_dcf = r
+            threshold = i
+    return threshold
