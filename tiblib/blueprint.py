@@ -92,7 +92,7 @@ class Faucet(ABC):
         """
 
     @abstractmethod
-    def predict(self, x):
+    def predict(self, x,  return_prob=False):
         """
         Generic Predict method used to label a dataset
         :param x: numpy 2D array, columns should be the features and rows the data samples

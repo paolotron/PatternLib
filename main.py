@@ -1,9 +1,12 @@
+from typing import List
+
 import numpy as np
 import matplotlib.pyplot as plt
 
-import tiblib
+import tiblib.pipeline as pip
 import tiblib.validation as val
 import tiblib.Classifier as cl
+import tiblib.preproc as prep
 from tiblib.blueprint import Faucet
 from tiblib.preproc import StandardScaler
 
@@ -41,24 +44,32 @@ def test_random_models():
         print(f"Model: {type(model).__name__}, err_rate: {conf_matrix}")
 
 
-def plot_data_exploration():
+def kfold_test():
     train, train_labels, test, test_labels = get_pulsar_data(labels=True)
-    fig, axes = plt.subplots(train.shape[1], 1, figsize=(10, 15))
-    for i in range(train.shape[1]):
-        axes[i].hist(train[:, i][train_labels == 0], bins=50, density=True, alpha=0.5)
-        axes[i].hist(train[:, i][train_labels == 1], bins=50, density=True, alpha=0.5)
-        axes[i].title.set_text(attributes[i])
-    fig.tight_layout()
-    fig.show()
-    fig, axes = plt.subplots(1, train.shape[1], figsize=(10, 10))
-    for i in range(train.shape[1]):
-        axes[i].boxplot(train[:, i][train_labels == 0])
-        axes[i].boxplot(train[:, i][train_labels == 1])
-    fig.tight_layout()
-    fig.show()
+    pipe = pip.Pipeline([prep.Pca(train.shape[1]-1), cl.GaussianClassifier()])
+    pipe.fit(train, train_labels)
+    print(val.err_rate(pipe.predict(test), test_labels))
+    pipe_list: List[pip.Pipeline]
+    preprocessing_pipe_list = [
+        pip.Pipeline([]),
+        pip.Pipeline([prep.Pca(train.shape[1])]),
+        pip.Pipeline([prep.Pca(train.shape[1] - 1)]),
+        pip.Pipeline([prep.Lda(train.shape[1])]),
+        pip.Pipeline([prep.Lda(train.shape[1]) - 1]),
+        pip.Pipeline([prep.Pca(train.shape[1]), prep.Lda(train.shape[1])]),
+        pip.Pipeline([prep.Pca(train.shape[1] - 1), prep.Lda(train.shape[1])]),
+        pip.Pipeline([prep.Pca(train.shape[1] - 1), prep.Lda(train.shape[1] - 1)])
+    ]
+    for pipe in preprocessing_pipe_list:
+        for x_tr, y_tr, x_ev, y_ev in val.kfold_split(train, train_labels, 5):
+            pipe.fit(x_tr, y_tr)
+
+            score = pipe.predict(x_ev, True)
+            # TODO EVALUATE SCORE
+
 
 
 if __name__ == "__main__":
-    test_random_models()
+    kfold_test()
 
 

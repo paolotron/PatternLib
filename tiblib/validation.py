@@ -53,3 +53,19 @@ def accuracy(l_calc, l_real):
 
 def err_rate(l_calc, l_real):
     return 1-accuracy(l_calc, l_real)
+
+
+def grid_search(hypers: dict):
+    def rec_grid_search(hyper, i, resul, curr):
+        if i == len(hyper):
+            resul.append(curr.copy())
+            return
+        for el in hyper[i][1]:
+            curr[hyper[i][0]] = el
+            rec_grid_search(hyper, i+1, resul, curr)
+            curr[hyper[i][0]] = None
+
+    res = []
+    rec_grid_search(list(hypers.items()), 0, res, {})
+    return res
+
