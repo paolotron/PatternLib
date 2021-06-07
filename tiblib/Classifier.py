@@ -82,7 +82,7 @@ class GaussianClassifier(Faucet):
         logsum = scipy.special.logsumexp(SJoint, axis=1)
         self.Spost = SJoint - logsum.reshape(1, -1).T
         res = np.argmax(self.Spost, axis=1)
-        return res if not return_prob else np.exp(self.Spost[1, :]) / (np.exp(self.Spost[0, :] + 0.00000001))
+        return res if not return_prob else np.exp(self.Spost[:, 1]) / (np.exp(self.Spost[:, 0]) + 0.00000001)
 
     def fit_predict(self, x, y):
         self.fit(x, y)
