@@ -68,7 +68,7 @@ def minimal_detection_cost(llr, real_labels, prior_prob, cost_false_neg, cost_fa
         labels = optimal_bayes_decision_with_threshold(llr, thresh)
         confus = val.confusion_matrix(labels, real_labels)
         risk_test = bayes_detection_function_with_confusion(confus, prior_prob, cost_false_neg, cost_false_pos)
-        results.append(risk_test/normalizer_factor)
+        results.append(risk_test / normalizer_factor)
     return min(results)
 
 
@@ -82,7 +82,7 @@ def logpdf_GMM(X, gmm, nosum=False):
     return res
 
 
-def EM_estimation(X, gmm, deltat=10**-6, *, tied=False, psi=None, diag=False, prin=False):
+def EM_estimation(X, gmm, deltat=10 ** -6, *, tied=False, psi=None, diag=False, prin=False):
     if psi is not None:
         for i in range(len(gmm)):
             gmm[i] = (gmm[i][0], gmm[i][1], eig_constraint(gmm[i][2], psi))
@@ -130,10 +130,11 @@ def LGB_estimation(X, alpha: float, n: int, *, posterior=1., psi=None, tied=Fals
         for gm in gmm:
             U, s, Vh = np.linalg.svd(gm[2])
             d = U[:, 0:1] * s[0] ** 0.5 * alpha
-            new_gmm.append((gm[0]/2, gm[1]+d, gm[2]))
-            new_gmm.append((gm[0]/2, gm[1]-d, gm[2]))
+            new_gmm.append((gm[0] / 2, gm[1] + d, gm[2]))
+            new_gmm.append((gm[0] / 2, gm[1] - d, gm[2]))
         gmm = EM_estimation(X, new_gmm, psi=psi, tied=tied, diag=diag, prin=prin)
     return gmm
+
 
 def getConfusionMatrix(predictions, labels, nclass):
     conf = np.zeros((nclass, nclass), dtype=int)
@@ -141,22 +142,27 @@ def getConfusionMatrix(predictions, labels, nclass):
         conf[predictions[i], labels[i]] += 1
     return conf
 
+
 def optimalBayesBinary(llrs, Cfn=1, Cfp=1, pi1=0.091):
-    return np.where(llrs > -np.log(pi1*Cfn/((1-pi1)*Cfp)), 1, 0)
+    return np.where(llrs > -np.log(pi1 * Cfn / ((1 - pi1) * Cfp)), 1, 0)
+
 
 def bayesRisk(conf, Cfn=1, Cfp=1, pi1=0.5):
-    fnr = conf[0, 1] / (conf[0, 1]+conf[1, 1])
-    fpr = conf[1, 0] / (conf[1, 0]+conf[0, 0])
-    return pi1*Cfn*fnr+(1-pi1)*Cfp*fpr
+    fnr = conf[0, 1] / (conf[0, 1] + conf[1, 1])
+    fpr = conf[1, 0] / (conf[1, 0] + conf[0, 0])
+    return pi1 * Cfn * fnr + (1 - pi1) * Cfp * fpr
+
 
 def normalizedBayesRisk(conf, Cfn=1, Cfp=1, pi1=0.091):
     B = bayesRisk(conf, Cfn, Cfp, pi1)
-    Bdummy = min(pi1*Cfn, (1-pi1)*Cfp)
-    return B/Bdummy
+    Bdummy = min(pi1 * Cfn, (1 - pi1) * Cfp)
+    return B / Bdummy
 
-def minDetectionCost(llrs, lab):
+
+def minDetectionCost(llrs, lab, n_trys=100):
     min_dcf = float('inf')
-    for i in np.linspace(min(llrs), max(llrs), 100):
+    threshold = 0
+    for i in np.linspace(min(llrs), max(llrs), n_trys):
         pred = np.where(llrs > i, 1, 0)
         conf = getConfusionMatrix(pred, lab, 2)
         r = normalizedBayesRisk(conf)
