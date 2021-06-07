@@ -38,12 +38,17 @@ def kfold_split(x, y, splits=10, seed=0):
         yield x_tr, y_tr, x_ts, y_ts
 
 
-def confusion_matrix(l_calc, l_real):
+def confusion_matrix(l_calc, l_real, print_cm=False):
     n_labels = len(np.unique(l_real))
     confusion = np.zeros((n_labels, n_labels))
     for i in range(n_labels):
         for j in range(n_labels):
             confusion[i, j] = sum((l_calc == i) & (l_real == j))
+    if print_cm:
+        print("\tFalse negative rate: ", "{:.4f}".format(confusion[1, 0] / (confusion[1, 0] + confusion[1, 1])))
+        print("\tFalse positive rate: ", "{:.4f}".format(confusion[0, 1] / (confusion[0, 1] + confusion[0, 0])))
+        print("\tTrue positive rate: ", "{:.4f}".format(confusion[1, 1] / (confusion[1, 1] + confusion[1, 0])))
+        print("\tTrue negative rate: ", "{:.4f}".format(confusion[0, 0] / (confusion[0, 1] + confusion[0, 0])))
     return confusion
 
 
