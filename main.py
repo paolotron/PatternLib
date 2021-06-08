@@ -116,8 +116,9 @@ def k_test(pipe, train, train_labels, K, prior_prob=0.091):
     labels = np.empty((0,), int)
     for x_tr, y_tr, x_ev, y_ev in val.kfold_split(train, train_labels, K):
         pipe.fit(x_tr, y_tr)
-        err_rate += val.err_rate(pipe.predict(x_ev), y_ev) / K
-        ratio = pipe.predict(x_ev, True)
+        lab, ratio = pipe.predict(x_ev, True)
+        err_rate += val.err_rate(lab, y_ev) / K
+
         scores = np.append(scores, ratio, axis=0)
         labels = np.append(labels, y_ev, axis=0)
     dcf = prob.minDetectionCost(scores, labels.astype(int), pi1=prior_prob)
