@@ -96,7 +96,7 @@ def kfold_test():
     #   Gaussian Mixture
     """
     for pipe in preprocessing_pipe_list:
-        for hyper in val.grid_search({'psi': [0.01], 'alpha': [0.1, 1, 0.01]}):
+        for hyper in val.grid_search({'psi': [0.01], 'alpha': [0.1], 'N': [1, 2]}):
             model = cl.GaussianMixture(**hyper)
             pipe.add_step(model)
             dcf, err_rate = k_test(pipe, train, train_labels, 5)
