@@ -67,7 +67,7 @@ def kfold_test():
         dcf, err_rate = k_test(pipe, train, train_labels, 5)
         pipe.rem_step()
         print("Gaussian", " error rate: ", err_rate, " ", pipe)
-        print("\tmean min_DCF: ", dcf / K)
+        print("\tmean min_DCF: ", dcf)
     # Naive Bayes
     for pipe in preprocessing_pipe_list:
         model = cl.NaiveBayes()
@@ -75,7 +75,7 @@ def kfold_test():
         dcf, err_rate = k_test(pipe, train, train_labels, 5)
         pipe.rem_step()
         print("Naive Bayes", " error rate: ", err_rate, " ", pipe)
-        print("\tmean min_DCF: ", dcf / K)
+        print("\tmean min_DCF: ", dcf)
     # Tied Gaussian
     for pipe in preprocessing_pipe_list:
         model = cl.TiedGaussian()
@@ -83,7 +83,7 @@ def kfold_test():
         dcf, err_rate = k_test(pipe, train, train_labels, 5)
         pipe.rem_step()
         print("Tied Gaussian", " error rate: ", err_rate, " ", pipe)
-        print("\tmean min_DCF: ", dcf / K)
+        print("\tmean min_DCF: ", dcf)
         #   Logistic regression
     for pipe in preprocessing_pipe_list:
         for hyper in val.grid_search({'norm_coeff': [0.1, 0.5, 1]}):
@@ -92,7 +92,7 @@ def kfold_test():
             dcf, err_rate = k_test(pipe, train, train_labels, 5)
             pipe.rem_step()
             print("Logistic regression", " error rate: ", err_rate, " ", hyper, " ", pipe)
-            print("\tmean min_DCF: ", dcf / K)
+            print("\tmean min_DCF: ", dcf)
     #   Gaussian Mixture
 
     for pipe in preprocessing_pipe_list:
