@@ -59,7 +59,7 @@ def kfold_test():
         pip.Pipeline([prep.StandardScaler(), prep.Pca(train.shape[1] - 1), prep.Lda(train.shape[1] - 1)]),
     ]
     K = 5
-
+    """
     # Gaussian
     for pipe in preprocessing_pipe_list:
         model = cl.GaussianClassifier()
@@ -94,6 +94,7 @@ def kfold_test():
             print("Logistic regression", " error rate: ", err_rate, " ", hyper, " ", pipe)
             print("\tmean min_DCF: ", dcf / K)
     #   Gaussian Mixture
+    """
     for pipe in preprocessing_pipe_list:
         for hyper in val.grid_search({'psi': [0.01, 0.001, 0.1], 'alpha': [0.1, 1, 0.01]}):
             model = cl.GaussianMixture(**hyper)
