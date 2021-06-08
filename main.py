@@ -59,7 +59,7 @@ def kfold_test():
         pip.Pipeline([prep.StandardScaler(), prep.Pca(train.shape[1] - 1), prep.Lda(train.shape[1] - 1)]),
     ]
     K = 5
-    """
+
     # Gaussian
     for pipe in preprocessing_pipe_list:
         model = cl.GaussianClassifier()
@@ -94,25 +94,29 @@ def kfold_test():
             print("Logistic regression", " error rate: ", err_rate, " ", hyper, " ", pipe)
             print("\tmean min_DCF: ", dcf / K)
     #   Gaussian Mixture
-    """
+
     for pipe in preprocessing_pipe_list:
-        for hyper in val.grid_search({'psi': [0.01], 'alpha': [0.1], 'N': [1, 2]}):
+        for hyper in val.grid_search({'psi': [0.01], 'alpha': [0.1], 'N': [0, 1, 2]}):
             model = cl.GaussianMixture(**hyper)
             pipe.add_step(model)
             dcf, err_rate = k_test(pipe, train, train_labels, 5)
             pipe.rem_step()
             print("Gaussian Mixture", " error rate: ", err_rate, " ", hyper, " ", pipe)
-            print("\tmean min_DCF: ", dcf / K)
+            print("\tmean min_DCF: ", dcf)
 
 
 def k_test(pipe, train, train_labels, K, prior_prob=0.091):
     err_rate = 0
     dcf = 0
+    scores = np.empty((0,), float)
+    labels = np.empty((0,), int)
     for x_tr, y_tr, x_ev, y_ev in val.kfold_split(train, train_labels, K):
         pipe.fit(x_tr, y_tr)
         err_rate += val.err_rate(pipe.predict(x_ev), y_ev) / K
         ratio = pipe.predict(x_ev, True)
-        dcf += prob.minDetectionCost(ratio, y_ev.astype(int), pi1=prior_prob) / K
+        scores = np.append(scores, ratio, axis=0)
+        labels = np.append(labels, y_ev, axis=0)
+    dcf = prob.minDetectionCost(scores, labels.astype(int), pi1=prior_prob)
     return dcf, err_rate
 
 
