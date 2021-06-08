@@ -60,6 +60,11 @@ def err_rate(l_calc, l_real):
     return 1-accuracy(l_calc, l_real)
 
 
+def FScore(l_calc, l_real):
+    conf = confusion_matrix(l_calc, l_real)
+    return conf[0, 0]/(conf[0, 0]*0.5*(conf[0, 1]+conf[1, 0]))
+
+
 def grid_search(hypers: dict):
     def rec_grid_search(hyper, i, resul, curr):
         if i == len(hyper):

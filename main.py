@@ -10,6 +10,9 @@ import tiblib.Classifier as cl
 import tiblib.preproc as prep
 from tiblib.blueprint import Faucet
 from tiblib.preproc import StandardScaler
+from datetime import datetime
+
+save_logs = False
 
 attributes = [
     "Mean of the integrated profile",
@@ -65,6 +68,7 @@ def kfold_test():
         model = cl.GaussianClassifier()
         pipe.add_step(model)
         dcf, err_rate = k_test(pipe, train, train_labels, 5)
+        save_res_to_file(pipe, dcf, err_rate)
         pipe.rem_step()
         print("Gaussian", " error rate: ", err_rate, " ", pipe)
         print("\tmean min_DCF: ", dcf)
@@ -81,9 +85,9 @@ def kfold_test():
         model = cl.TiedGaussian()
         pipe.add_step(model)
         dcf, err_rate = k_test(pipe, train, train_labels, 5)
-        pipe.rem_step()
         print("Tied Gaussian", " error rate: ", err_rate, " ", pipe)
-        print("\tmean min_DCF: ", dcf)
+        print("\tmean min_DCF: ", dcf / K)
+        pipe.rem_step()
         #   Logistic regression
     for pipe in preprocessing_pipe_list:
         for hyper in val.grid_search({'norm_coeff': [0.1, 0.5, 1]}):
@@ -119,6 +123,15 @@ def k_test(pipe, train, train_labels, K, prior_prob=0.091):
     dcf = prob.minDetectionCost(scores, labels.astype(int), pi1=prior_prob)
     return dcf, err_rate
 
+def save_res_to_file(pipe: pip.Pipeline, minDCF: float, err_rate: float):
+    if save_logs:
+        file = open(logfile, 'a')
+        file.write(f"{pipe}: MinDCF={minDCF} err_rate={err_rate}\n")
+        file.close()
+
+
+if save_logs:
+    logfile = datetime.now().strftime("logs/%d-%m-%Y-%H-%M-%S.log")
 
 if __name__ == "__main__":
     kfold_test()

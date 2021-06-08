@@ -36,4 +36,4 @@ class Pipeline:
         return self.predict(x, y)
 
     def __str__(self):
-        return ''.join([type(i).__name__ + " " for i in self.steps])
+        return ''.join([i.__str__() + "->" for i in self.steps])[:-2]

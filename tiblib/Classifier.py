@@ -82,11 +82,14 @@ class GaussianClassifier(Faucet):
         logsum = scipy.special.logsumexp(SJoint, axis=1)
         self.Spost = SJoint - logsum.reshape(1, -1).T
         res = np.argmax(self.Spost, axis=1)
-        return res if not return_prob else np.exp(self.Spost[:, 1]) / (np.exp(self.Spost[:, 0]) + 0.00000001)
+        return res if not return_prob else res, np.exp(self.Spost[:, 1]) / (np.exp(self.Spost[:, 0]) + 0.00000001)
 
     def fit_predict(self, x, y):
         self.fit(x, y)
         return self.predict(x)
+
+    def __str__(self):
+        return "Gaussian()"
 
 
 class NaiveBayes(GaussianClassifier):
@@ -99,6 +102,9 @@ class NaiveBayes(GaussianClassifier):
             self.estimates.append((label, np.mean(matrix, 0), cov, count / x.shape[0]))
         return self
 
+    def __str__(self):
+        return "NaiveBayes()"
+
 
 class TiedGaussian(GaussianClassifier):
 
@@ -107,6 +113,9 @@ class TiedGaussian(GaussianClassifier):
         sigma = (1 / y.shape[0]) * sum([sigma * sum(y == label) for label, mu, sigma, prob in self.estimates])
         self.estimates = [(label, mu, sigma, prob) for label, mu, _, prob in self.estimates]
         return self
+
+    def __str__(self):
+        return "TiedGaussian()"
 
 
 class MultiNomial(Faucet):
@@ -131,7 +140,7 @@ class MultiNomial(Faucet):
         logsum = scipy.special.logsumexp(sjoint, axis=1)
         self.Spost = sjoint - logsum.reshape(-1, 1)
         res = self.labels[np.argmax(x @ self.estimate.T, axis=1)]
-        return res if not return_prob else np.exp(self.Spost)
+        return res if not return_prob else res, np.exp(self.Spost)
 
     def fit_predict(self, x, y):
         self.fit(x, y)
@@ -198,13 +207,16 @@ class LogisticRegression(Faucet):
             raise NoFitError()
         if self.binary:
             sc = self.w @ x.T + self.b
-            return sc if return_prob else sc > 0
+            return sc>0, sc if return_prob else sc > 0
         else:
             sc = self.w @ x.T + self.b
-            return sc if return_prob else np.argmax(sc, axis=0)
+            return np.argmax(sc, axis=0), sc if return_prob else np.argmax(sc, axis=0)
 
     def fit_predict(self, x, y):
         return self.predict(self.fit(x, y))
+
+    def __str__(self):
+        return f"LogisticRegression(norm={self.norm_coeff})"
 
 
 class SVM(Faucet):
@@ -274,6 +286,15 @@ class SVM(Faucet):
     def fit_predict(self, x, y):
         pass
 
+    def __str__(self):
+        if self.ker is None:
+            return f"SVM(kernel=Linear, C={self.C}, regularization={self.K})"
+        if self.ker == "Poly":
+            return f"SVM(kernel=Polynomial, C={self.C}, regularization={self.K}, d={self.paramker[0]}, c={self.paramker[1]})"
+        if self.ker == "Radial":
+            return f"SVM(kernel=Radial, C={self.C}, regularization={self.K}, gamma={self.paramker[0]})"
+        return "Error"
+
 
 class GaussianMixture(Faucet):
 
@@ -300,8 +321,22 @@ class GaussianMixture(Faucet):
             res.append(pr.logpdf_GMM(x.T, self.gmm_est[label]))
         log_matr = np.vstack(res)
         if return_prob:
-            return log_matr[1, :] / log_matr[0, :]
+            return np.argmax(log_matr, axis=0), log_matr[1, :] / log_matr[0, :]
         return np.argmax(log_matr, axis=0)
 
     def fit_predict(self, x, y):
-        pass
+        self.fit(x, y)
+        return self.predict(x, y)
+
+    def __str__(self):
+        res = ""
+        if self.tied:
+            res += f"TiedCovarianceGMM(alpha={self.alpha}"
+        elif self.diag:
+            res += f"DiagonalGMM(alpha={self.alpha}"
+        else:
+            res += f"GMM(alpha={self.alpha}"
+        res += f", N={2**self.N}"
+        if self.psi is not None:
+            res += f", psi={self.psi}"
+        return res

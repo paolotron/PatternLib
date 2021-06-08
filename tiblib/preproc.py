@@ -59,6 +59,9 @@ class Pca(Pipe):
             raise NoFitError()
         return (self.P.T @ (x - (self.mu if self.center else 0)).T).T
 
+    def __str__(self):
+        return f"PCA(n_feat={self.n_dim})"
+
 
 class Lda(Pipe):
 
@@ -119,6 +122,9 @@ class Lda(Pipe):
         s, U = eigh(SB, SW)
         self.U = U[:, ::-1][:, :self.m]
 
+    def __str__(self):
+        return f"LDA(n_feat={self.m})"
+
 
 class StandardScaler(Pipe):
 
@@ -142,6 +148,9 @@ class StandardScaler(Pipe):
         mu = self.mu if self._with_mean else 0
         std = self.std if self._with_std else 1
         return (x - mu) / std
+
+    def __str__(self):
+        return "StandardScaler()"
 
 
 class PolynomialFeatures(Pipe):
