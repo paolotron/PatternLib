@@ -104,7 +104,7 @@ def kfold_test():
             print("\tmean min_DCF: ", dcf)
     #   SVM no kern
     for pipe in preprocessing_pipe_list:
-        for hyper in val.grid_search({'C': [0.1, 1, 10], 'K': [1, 10], 'ker': [None]}):
+        for hyper in val.grid_search({'c': [0.1, 1, 10], 'k': [1, 10], 'ker': [None]}):
             model = cl.SVM(**hyper)
             pipe.add_step(model)
             dcf, err_rate = k_test(pipe, train, train_labels, 5)
@@ -113,7 +113,7 @@ def kfold_test():
             print("\tmean min_DCF: ", dcf)
     #   SVM Poly
     for pipe in preprocessing_pipe_list:
-        for hyper in val.grid_search({'C': [1], 'K': [0, 1], 'ker': ['Poly'], 'paramker': [[2, 0], [2, 1]]}):
+        for hyper in val.grid_search({'c': [1], 'k': [0, 1], 'ker': ['Poly'], 'paramker': [[2, 0], [2, 1]]}):
             model = cl.SVM(**hyper)
             pipe.add_step(model)
             dcf, err_rate = k_test(pipe, train, train_labels, 5)
@@ -122,21 +122,39 @@ def kfold_test():
             print("\tmean min_DCF: ", dcf)
     #   SVM Radial
     for pipe in preprocessing_pipe_list:
-        for hyper in val.grid_search({'C': [1], 'K': [0, 1], 'ker': ['Radial'], 'paramker': [[1], [10]]}):
+        for hyper in val.grid_search({'c': [1], 'k': [0, 1], 'ker': ['Radial'], 'paramker': [[1], [10]]}):
             model = cl.SVM(**hyper)
             pipe.add_step(model)
             dcf, err_rate = k_test(pipe, train, train_labels, 5)
             pipe.rem_step()
             print("SVM Radial", " error rate: ", err_rate, " ", hyper, " ", pipe)
             print("\tmean min_DCF: ", dcf)
-    #   Gaussian Mixture
+    #   Gaussian Mixture tied
+    for pipe in preprocessing_pipe_list:
+        for hyper in val.grid_search({'tied': [True], 'alpha': [0.1], 'N': [0, 1, 2]}):
+            model = cl.GaussianMixture(**hyper)
+            pipe.add_step(model)
+            dcf, err_rate = k_test(pipe, train, train_labels, 5)
+            pipe.rem_step()
+            print("Gaussian Mixture Tied", " error rate: ", err_rate, " ", hyper, " ", pipe)
+            print("\tmean min_DCF: ", dcf)
+    #   Gaussian Mixture diag
+    for pipe in preprocessing_pipe_list:
+        for hyper in val.grid_search({'diag': [False], 'alpha': [0.1], 'N': [0, 1, 2]}):
+            model = cl.GaussianMixture(**hyper)
+            pipe.add_step(model)
+            dcf, err_rate = k_test(pipe, train, train_labels, 5)
+            pipe.rem_step()
+            print("Gaussian Mixture Diag", " error rate: ", err_rate, " ", hyper, " ", pipe)
+            print("\tmean min_DCF: ", dcf)
+    #   Gaussian Mixture psi
     for pipe in preprocessing_pipe_list:
         for hyper in val.grid_search({'psi': [0.01], 'alpha': [0.1], 'N': [0, 1, 2]}):
             model = cl.GaussianMixture(**hyper)
             pipe.add_step(model)
             dcf, err_rate = k_test(pipe, train, train_labels, 5)
             pipe.rem_step()
-            print("Gaussian Mixture", " error rate: ", err_rate, " ", hyper, " ", pipe)
+            print("Gaussian Mixture Psi", " error rate: ", err_rate, " ", hyper, " ", pipe)
             print("\tmean min_DCF: ", dcf)
 
 
@@ -179,5 +197,6 @@ if __name__ == "__main__":
     if save_logs:
         os.mkdir(logfile)
     kfold_test()
+    print("Finito")
 
 
