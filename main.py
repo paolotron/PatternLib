@@ -135,9 +135,9 @@ def save_scores(score, pipe, label):
     all_scores.append(score)
     all_pipes.append(pipe.__str__())
     all_labels.append(label)
-    np.save("scores", np.vstack(all_scores))
-    np.save("labels", np.vstack(all_labels))
-    np.save("pipe", np.vstack(all_pipes))
+    np.save("result/scores", np.vstack(all_scores))
+    np.save("result/labels", np.vstack(all_labels))
+    np.save("result/pipe", np.vstack(all_pipes))
 
 
 def save_res_to_file(pipe: pip.Pipeline, minDCF: float, err_rate: float):
