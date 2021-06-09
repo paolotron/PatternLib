@@ -279,9 +279,8 @@ class SVM(Faucet):
         if self.ker is None:
             score = self.W.T @ x.T + self.b * self.K
         else:
-            eval_mat = (self.alpha * self.z) @ self.kernel(self.x, x.T)
-            score = np.where(eval_mat > 0, 1, 0)
-        return np.where(score > 0, 1, 0)
+            score = (self.alpha * self.z) @ self.kernel(self.x, x.T)
+        return np.where(score > 0, 1, 0), score if return_prob else np.where(score > 0, 1, 0)
 
     def fit_predict(self, x, y):
         pass
