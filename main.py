@@ -114,6 +114,7 @@ def kfold_test():
             print("\tmean min_DCF: ", dcf)
     """
 
+
 def k_test(pipe, train, train_labels, K, prior_prob=0.091):
     err_rate = 0
     dcf = 0
@@ -126,10 +127,17 @@ def k_test(pipe, train, train_labels, K, prior_prob=0.091):
         scores = np.append(scores, ratio, axis=0)
         labels = np.append(labels, y_ev, axis=0)
     dcf = prob.minDetectionCost(scores, labels.astype(int), pi1=prior_prob)
-    all_scores.append(scores)
-    all_pipes.append(pipe.__str__())
-    all_labels.append(labels)
+    save_scores(scores, pipe, labels)
     return dcf, err_rate
+
+
+def save_scores(score, pipe, label):
+    all_scores.append(score)
+    all_pipes.append(pipe.__str__())
+    all_labels.append(label)
+    np.save("scores", np.vstack(all_scores))
+    np.save("labels", np.vstack(all_labels))
+    np.save("pipe", np.vstack(all_pipes))
 
 
 def save_res_to_file(pipe: pip.Pipeline, minDCF: float, err_rate: float):
@@ -144,8 +152,5 @@ if save_logs:
 
 if __name__ == "__main__":
     kfold_test()
-    np.save("scores", np.vstack(all_scores))
-    np.save("labels", np.vstack(all_labels))
-    np.save("pipe", np.vstack(all_pipes))
 
 
