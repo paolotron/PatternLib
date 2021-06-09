@@ -1,3 +1,4 @@
+import os
 from typing import List
 
 import numpy as np
@@ -12,7 +13,7 @@ from tiblib.blueprint import Faucet
 from tiblib.preproc import StandardScaler
 from datetime import datetime
 
-save_logs = False
+save_logs = True
 all_scores = []
 all_pipes = []
 all_labels = []
@@ -71,7 +72,6 @@ def kfold_test():
         model = cl.GaussianClassifier()
         pipe.add_step(model)
         dcf, err_rate = k_test(pipe, train, train_labels, 5)
-        save_res_to_file(pipe, dcf, err_rate)
         pipe.rem_step()
         print("Gaussian", " error rate: ", err_rate, " ", pipe)
         print("\tmean min_DCF: ", dcf)
@@ -139,7 +139,6 @@ def kfold_test():
             print("\tmean min_DCF: ", dcf)
 
 
-
 def k_test(pipe, train, train_labels, K, prior_prob=0.091):
     err_rate = 0
     dcf = 0
@@ -160,9 +159,9 @@ def save_scores(score, pipe, label):
     all_scores.append(score)
     all_pipes.append(pipe.__str__())
     all_labels.append(label)
-    np.save("result/scores", np.vstack(all_scores))
-    np.save("result/labels", np.vstack(all_labels))
-    np.save("result/pipe", np.vstack(all_pipes))
+    np.save(f"{logfile}/scores", np.vstack(all_scores))
+    np.save(f"{logfile}/labels", np.vstack(all_labels))
+    np.save(f"{logfile}/pipe", np.vstack(all_pipes))
 
 
 def save_res_to_file(pipe: pip.Pipeline, minDCF: float, err_rate: float):
@@ -173,9 +172,11 @@ def save_res_to_file(pipe: pip.Pipeline, minDCF: float, err_rate: float):
 
 
 if save_logs:
-    logfile = datetime.now().strftime("logs/%d-%m-%Y-%H-%M-%S.log")
+    logfile = datetime.now().strftime("result/%d-%m-%Y-%H-%M-%S")
 
 if __name__ == "__main__":
+    if save_logs:
+        os.mkdir(logfile)
     kfold_test()
 
 
