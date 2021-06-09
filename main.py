@@ -13,6 +13,9 @@ from tiblib.preproc import StandardScaler
 from datetime import datetime
 
 save_logs = False
+all_scores = []
+all_pipes = []
+all_labels = []
 
 attributes = [
     "Mean of the integrated profile",
@@ -72,6 +75,7 @@ def kfold_test():
         pipe.rem_step()
         print("Gaussian", " error rate: ", err_rate, " ", pipe)
         print("\tmean min_DCF: ", dcf)
+    """
     # Naive Bayes
     for pipe in preprocessing_pipe_list:
         model = cl.NaiveBayes()
@@ -97,6 +101,7 @@ def kfold_test():
             pipe.rem_step()
             print("Logistic regression", " error rate: ", err_rate, " ", hyper, " ", pipe)
             print("\tmean min_DCF: ", dcf)
+    
     #   Gaussian Mixture
 
     for pipe in preprocessing_pipe_list:
@@ -107,7 +112,7 @@ def kfold_test():
             pipe.rem_step()
             print("Gaussian Mixture", " error rate: ", err_rate, " ", hyper, " ", pipe)
             print("\tmean min_DCF: ", dcf)
-
+    """
 
 def k_test(pipe, train, train_labels, K, prior_prob=0.091):
     err_rate = 0
@@ -118,11 +123,14 @@ def k_test(pipe, train, train_labels, K, prior_prob=0.091):
         pipe.fit(x_tr, y_tr)
         lab, ratio = pipe.predict(x_ev, True)
         err_rate += val.err_rate(lab, y_ev) / K
-
         scores = np.append(scores, ratio, axis=0)
         labels = np.append(labels, y_ev, axis=0)
     dcf = prob.minDetectionCost(scores, labels.astype(int), pi1=prior_prob)
+    all_scores.append(scores)
+    all_pipes.append(pipe.__str__())
+    all_labels.append(labels)
     return dcf, err_rate
+
 
 def save_res_to_file(pipe: pip.Pipeline, minDCF: float, err_rate: float):
     if save_logs:
@@ -136,5 +144,8 @@ if save_logs:
 
 if __name__ == "__main__":
     kfold_test()
+    np.save("scores", np.vstack(all_scores))
+    np.save("labels", np.vstack(all_labels))
+    np.save("pipe", np.vstack(all_pipes))
 
 

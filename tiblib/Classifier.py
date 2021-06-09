@@ -298,7 +298,7 @@ class SVM(Faucet):
 
 class GaussianMixture(Faucet):
 
-    def __init__(self, alpha, N=2, tied=False, diag=False, psi=None):
+    def __init__(self, alpha=0.1, N=2, tied=False, diag=False, psi=None):
         self.alpha = alpha
         self.N = N
         self.tied = tied
@@ -321,7 +321,7 @@ class GaussianMixture(Faucet):
             res.append(pr.logpdf_GMM(x.T, self.gmm_est[label]))
         log_matr = np.vstack(res)
         if return_prob:
-            return np.argmax(log_matr, axis=0), log_matr[1, :] / log_matr[0, :]
+            return np.argmax(log_matr, axis=0), log_matr[0, :] / log_matr[1, :]
         return np.argmax(log_matr, axis=0)
 
     def fit_predict(self, x, y):
