@@ -58,12 +58,13 @@ def kfold_test():
     pipe_list: List[pip.Pipeline]
     preprocessing_pipe_list = [
         pip.Pipeline([prep.StandardScaler()]),
-        pip.Pipeline([prep.StandardScaler(), prep.Pca(train.shape[1])]),
-        pip.Pipeline([prep.StandardScaler(), prep.Pca(train.shape[1] - 4)]),
+        # pip.Pipeline([prep.StandardScaler(), prep.Pca(train.shape[1])]),
+        # pip.Pipeline([prep.StandardScaler(), prep.Pca(train.shape[1] - 1)]),
         pip.Pipeline([prep.StandardScaler(), prep.Lda(train.shape[1])]),
         pip.Pipeline([prep.StandardScaler(), prep.Lda(train.shape[1] - 1)]),
-        pip.Pipeline([prep.StandardScaler(), prep.Pca(train.shape[1]), prep.Lda(train.shape[1])]),
-        pip.Pipeline([prep.StandardScaler(), prep.Pca(train.shape[1] - 1), prep.Lda(train.shape[1] - 1)]),
+        pip.Pipeline([prep.StandardScaler(), prep.Lda(train.shape[1] - 2)]),
+        # pip.Pipeline([prep.StandardScaler(), prep.Pca(train.shape[1]), prep.Lda(train.shape[1])]),
+        # pip.Pipeline([prep.StandardScaler(), prep.Pca(train.shape[1] - 1), prep.Lda(train.shape[1] - 1)]),
     ]
     K = 5
 
