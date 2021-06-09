@@ -75,7 +75,7 @@ def kfold_test():
         pipe.rem_step()
         print("Gaussian", " error rate: ", err_rate, " ", pipe)
         print("\tmean min_DCF: ", dcf)
-    """
+
     # Naive Bayes
     for pipe in preprocessing_pipe_list:
         model = cl.NaiveBayes()
@@ -92,7 +92,7 @@ def kfold_test():
         print("Tied Gaussian", " error rate: ", err_rate, " ", pipe)
         print("\tmean min_DCF: ", dcf / K)
         pipe.rem_step()
-        #   Logistic regression
+    #   Logistic regression
     for pipe in preprocessing_pipe_list:
         for hyper in val.grid_search({'norm_coeff': [0.1, 0.5, 1]}):
             model = cl.LogisticRegression(**hyper)
@@ -101,9 +101,34 @@ def kfold_test():
             pipe.rem_step()
             print("Logistic regression", " error rate: ", err_rate, " ", hyper, " ", pipe)
             print("\tmean min_DCF: ", dcf)
-    
+    #   SVM no kern
+    for pipe in preprocessing_pipe_list:
+        for hyper in val.grid_search({'C': [0.1, 1, 10], 'K': [1, 10], 'ker': [None]}):
+            model = cl.SVM(**hyper)
+            pipe.add_step(model)
+            dcf, err_rate = k_test(pipe, train, train_labels, 5)
+            pipe.rem_step()
+            print("SVM(no ker)", " error rate: ", err_rate, " ", hyper, " ", pipe)
+            print("\tmean min_DCF: ", dcf)
+    #   SVM Poly
+    for pipe in preprocessing_pipe_list:
+        for hyper in val.grid_search({'C': [1], 'K': [0, 1], 'ker': ['Poly'], 'paramker': [[2, 0], [2, 1]]}):
+            model = cl.SVM(**hyper)
+            pipe.add_step(model)
+            dcf, err_rate = k_test(pipe, train, train_labels, 5)
+            pipe.rem_step()
+            print("SVM Poly", " error rate: ", err_rate, " ", hyper, " ", pipe)
+            print("\tmean min_DCF: ", dcf)
+    #   SVM Radial
+    for pipe in preprocessing_pipe_list:
+        for hyper in val.grid_search({'C': [1], 'K': [0, 1], 'ker': ['Radial'], 'paramker': [[1], [10]]}):
+            model = cl.SVM(**hyper)
+            pipe.add_step(model)
+            dcf, err_rate = k_test(pipe, train, train_labels, 5)
+            pipe.rem_step()
+            print("SVM Radial", " error rate: ", err_rate, " ", hyper, " ", pipe)
+            print("\tmean min_DCF: ", dcf)
     #   Gaussian Mixture
-
     for pipe in preprocessing_pipe_list:
         for hyper in val.grid_search({'psi': [0.01], 'alpha': [0.1], 'N': [0, 1, 2]}):
             model = cl.GaussianMixture(**hyper)
@@ -112,7 +137,7 @@ def kfold_test():
             pipe.rem_step()
             print("Gaussian Mixture", " error rate: ", err_rate, " ", hyper, " ", pipe)
             print("\tmean min_DCF: ", dcf)
-    """
+
 
 
 def k_test(pipe, train, train_labels, K, prior_prob=0.091):
@@ -126,7 +151,7 @@ def k_test(pipe, train, train_labels, K, prior_prob=0.091):
         err_rate += val.err_rate(lab, y_ev) / K
         scores = np.append(scores, ratio, axis=0)
         labels = np.append(labels, y_ev, axis=0)
-    dcf = prob.minDetectionCost(scores, labels.astype(int), pi1=prior_prob)
+    # dcf = prob.minDetectionCost(scores, labels.astype(int), pi1=prior_prob)
     save_scores(scores, pipe, labels)
     return dcf, err_rate
 
