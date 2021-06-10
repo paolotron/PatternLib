@@ -4,6 +4,7 @@ from typing import List
 import numpy as np
 import matplotlib.pyplot as plt
 
+import tiblib.Classifier
 import tiblib.pipeline as pip
 import tiblib.probability as prob
 import tiblib.validation as val
@@ -70,97 +71,53 @@ def kfold_test():
 
     # Gaussian
     for pipe in preprocessing_pipe_list:
-        model = cl.GaussianClassifier()
-        pipe.add_step(model)
-        dcf, err_rate = k_test(pipe, train, train_labels, 5)
-        pipe.rem_step()
-        print("Gaussian", " error rate: ", err_rate, " ", pipe)
-        print("\tmean min_DCF: ", dcf)
-
+        test_model(pipe, cl.GaussianClassifier, None, train, train_labels)
     # Naive Bayes
     for pipe in preprocessing_pipe_list:
-        model = cl.NaiveBayes()
-        pipe.add_step(model)
-        dcf, err_rate = k_test(pipe, train, train_labels, 5)
-        pipe.rem_step()
-        print("Naive Bayes", " error rate: ", err_rate, " ", pipe)
-        print("\tmean min_DCF: ", dcf)
+        test_model(pipe, cl.NaiveBayes, None, train, train_labels)
     # Tied Gaussian
     for pipe in preprocessing_pipe_list:
-        model = cl.TiedGaussian()
-        pipe.add_step(model)
-        dcf, err_rate = k_test(pipe, train, train_labels, 5)
-        print("Tied Gaussian", " error rate: ", err_rate, " ", pipe)
-        print("\tmean min_DCF: ", dcf / K)
-        pipe.rem_step()
+        test_model(pipe, cl.TiedGaussian, None, train, train_labels)
     #   Logistic regression
     for pipe in preprocessing_pipe_list:
         for hyper in val.grid_search({'norm_coeff': [0.1, 0.5, 1]}):
-            model = cl.LogisticRegression(**hyper)
-            pipe.add_step(model)
-            dcf, err_rate = k_test(pipe, train, train_labels, 5)
-            pipe.rem_step()
-            print("Logistic regression", " error rate: ", err_rate, " ", hyper, " ", pipe)
-            print("\tmean min_DCF: ", dcf)
+            test_model(pipe, cl.LogisticRegression, hyper, train, train_labels)
     #   SVM no kern
     for pipe in preprocessing_pipe_list:
         for hyper in val.grid_search({'c': [0.1, 1, 10], 'k': [1, 10], 'ker': [None]}):
-            model = cl.SVM(**hyper)
-            pipe.add_step(model)
-            dcf, err_rate = k_test(pipe, train, train_labels, 5)
-            pipe.rem_step()
-            print("SVM(no ker)", " error rate: ", err_rate, " ", hyper, " ", pipe)
-            print("\tmean min_DCF: ", dcf)
+            test_model(pipe, cl.SVM, hyper, train, train_labels)
     #   SVM Poly
     for pipe in preprocessing_pipe_list:
         for hyper in val.grid_search({'c': [1], 'k': [0, 1], 'ker': ['Poly'], 'paramker': [[2, 0], [2, 1]]}):
-            model = cl.SVM(**hyper)
-            pipe.add_step(model)
-            dcf, err_rate = k_test(pipe, train, train_labels, 5)
-            pipe.rem_step()
-            print("SVM Poly", " error rate: ", err_rate, " ", hyper, " ", pipe)
-            print("\tmean min_DCF: ", dcf)
+            test_model(pipe, cl.SVM, hyper, train, train_labels)
     #   SVM Radial
     for pipe in preprocessing_pipe_list:
         for hyper in val.grid_search({'c': [1], 'k': [0, 1], 'ker': ['Radial'], 'paramker': [[1], [10]]}):
-            model = cl.SVM(**hyper)
-            pipe.add_step(model)
-            dcf, err_rate = k_test(pipe, train, train_labels, 5)
-            pipe.rem_step()
-            print("SVM Radial", " error rate: ", err_rate, " ", hyper, " ", pipe)
-            print("\tmean min_DCF: ", dcf)
+            test_model(pipe, cl.SVM, hyper, train, train_labels)
     #   Gaussian Mixture tied
     for pipe in preprocessing_pipe_list:
         for hyper in val.grid_search({'tied': [True], 'alpha': [0.1], 'N': [0, 1, 2]}):
-            model = cl.GaussianMixture(**hyper)
-            pipe.add_step(model)
-            dcf, err_rate = k_test(pipe, train, train_labels, 5)
-            pipe.rem_step()
-            print("Gaussian Mixture Tied", " error rate: ", err_rate, " ", hyper, " ", pipe)
-            print("\tmean min_DCF: ", dcf)
+            test_model(pipe, cl.GaussianMixture, hyper, train, train_labels)
     #   Gaussian Mixture diag
     for pipe in preprocessing_pipe_list:
         for hyper in val.grid_search({'diag': [False], 'alpha': [0.1], 'N': [0, 1, 2]}):
-            model = cl.GaussianMixture(**hyper)
-            pipe.add_step(model)
-            dcf, err_rate = k_test(pipe, train, train_labels, 5)
-            pipe.rem_step()
-            print("Gaussian Mixture Diag", " error rate: ", err_rate, " ", hyper, " ", pipe)
-            print("\tmean min_DCF: ", dcf)
+            test_model(pipe, cl.GaussianMixture, hyper, train, train_labels)
     #   Gaussian Mixture psi
     for pipe in preprocessing_pipe_list:
         for hyper in val.grid_search({'psi': [0.01], 'alpha': [0.1], 'N': [0, 1, 2]}):
-            model = cl.GaussianMixture(**hyper)
-            pipe.add_step(model)
-            dcf, err_rate = k_test(pipe, train, train_labels, 5)
-            pipe.rem_step()
-            print("Gaussian Mixture Psi", " error rate: ", err_rate, " ", hyper, " ", pipe)
-            print("\tmean min_DCF: ", dcf)
+            test_model(pipe, cl.GaussianMixture, hyper, train, train_labels)
 
 
-def k_test(pipe, train, train_labels, K, prior_prob=0.091):
+def test_model(pipe: pip.Pipeline, mod, hyper: dict, train: np.ndarray, train_labels: np.ndarray):
+    model = mod(**hyper if hyper else {})
+    pipe.add_step(model)
+    err_rate = k_test(pipe, train, train_labels, 5)
+    print(f"{pipe}:{err_rate}")
+    pipe.rem_step()
+
+
+def k_test(pipe, train, train_labels, K):
     err_rate = 0
-    dcf = 0
     scores = np.empty((0,), float)
     labels = np.empty((0,), int)
     for x_tr, y_tr, x_ev, y_ev in val.kfold_split(train, train_labels, K):
@@ -169,9 +126,8 @@ def k_test(pipe, train, train_labels, K, prior_prob=0.091):
         err_rate += val.err_rate(lab, y_ev) / K
         scores = np.append(scores, ratio, axis=0)
         labels = np.append(labels, y_ev, axis=0)
-    # dcf = prob.minDetectionCost(scores, labels.astype(int), pi1=prior_prob)
     save_scores(scores, pipe, labels)
-    return dcf, err_rate
+    return  err_rate
 
 
 def save_scores(score, pipe, label):
@@ -183,12 +139,7 @@ def save_scores(score, pipe, label):
     np.save(f"{logfile}/pipe", np.vstack(all_pipes))
 
 
-def save_res_to_file(pipe: pip.Pipeline, minDCF: float, err_rate: float):
-    if save_logs:
-        file = open(logfile, 'a')
-        file.write(f"{pipe}: MinDCF={minDCF} err_rate={err_rate}\n")
-        file.close()
-
+logfile = None
 
 if save_logs:
     logfile = datetime.now().strftime("result/%d-%m-%Y-%H-%M-%S")
