@@ -136,10 +136,12 @@ def LGB_estimation(X, alpha: float, n: int, *, posterior=1., psi=None, tied=Fals
     return gmm
 
 
-def getConfusionMatrix(predictions, labels, nclass):
-    conf = np.zeros((nclass, nclass), dtype=int)
-    for i in range(predictions.shape[0]):
-        conf[predictions[i], labels[i]] += 1
+def getConfusionMatrix2(predictions, labels):
+    conf = np.zeros((2, 2), dtype=int)
+    conf[1, 1] = np.sum(predictions & labels)
+    conf[0, 0] = np.sum((~predictions) & (~labels))
+    conf[1, 0] = np.sum(predictions & (~labels))
+    conf[0, 1] = np.sum((~predictions) & labels)
     return conf
 
 
@@ -149,21 +151,23 @@ def bayesRisk(conf, Cfn=1, Cfp=1, pi1=0.5):
     return pi1 * Cfn * fnr + (1 - pi1) * Cfp * fpr
 
 
-def normalizedBayesRisk(conf, Cfn=1, Cfp=1, pi1=0.091):
+def normalizedBayesRisk(conf, Cfn=1, Cfp=1, pi1=0.5):
     B = bayesRisk(conf, Cfn, Cfp, pi1)
     Bdummy = min(pi1 * Cfn, (1 - pi1) * Cfp)
     return B / Bdummy
 
 
-def minDetectionCost(llrs, lab, n_trys=100, Cfn=1, Cfp=1, pi1=0.091):
+def minDetectionCost(llrs, lab, n_trys=100, Cfn=1, Cfp=1, pi1=0.5):
     min_dcf = float('inf')
     threshold = 0
     llrs_bet = llrs[np.logical_and(llrs > np.median(llrs)-5, llrs < np.median(llrs)+5)]
     for i in np.linspace(min(llrs_bet), max(llrs_bet), n_trys):
-        pred = np.where(llrs > i, 1, 0)
-        conf = getConfusionMatrix(pred, lab, 2)
+        pred = np.where(llrs > i, True, False)
+        conf1 = getConfusionMatrix2(pred, lab)
+        conf = getConfusionMatrix2(pred, lab)
+
         r = normalizedBayesRisk(conf, Cfn=Cfn, Cfp=Cfp, pi1=pi1)
         if min_dcf > r:
             min_dcf = r
             threshold = i
-    return min_dcf
+    return min_dcf, threshold

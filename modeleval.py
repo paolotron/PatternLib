@@ -59,13 +59,7 @@ def kfold_test():
     pipe_list: List[pip.Pipeline]
     preprocessing_pipe_list = [
         pip.Pipeline([prep.StandardScaler()]),
-        # pip.Pipeline([prep.StandardScaler(), prep.Pca(train.shape[1])]),
-        # pip.Pipeline([prep.StandardScaler(), prep.Pca(train.shape[1] - 1)]),
-        # pip.Pipeline([prep.StandardScaler(), prep.Lda(train.shape[1])]),
-        # pip.Pipeline([prep.StandardScaler(), prep.Lda(train.shape[1] - 1)]),
         pip.Pipeline([prep.StandardScaler(), prep.Lda(train.shape[1] - 2)]),
-        # pip.Pipeline([prep.StandardScaler(), prep.Pca(train.shape[1]), prep.Lda(train.shape[1])]),
-        # pip.Pipeline([prep.StandardScaler(), prep.Pca(train.shape[1] - 1), prep.Lda(train.shape[1] - 1)]),
     ]
     K = 5
 
@@ -127,7 +121,7 @@ def k_test(pipe, train, train_labels, K):
         scores = np.append(scores, ratio, axis=0)
         labels = np.append(labels, y_ev, axis=0)
     save_scores(scores, pipe, labels)
-    return  err_rate
+    return err_rate
 
 
 def save_scores(score, pipe, label):
