@@ -1,5 +1,7 @@
 import numpy as np
+from matplotlib import pyplot as plt
 
+import tiblib.probability as pr
 
 def train_test_split(x, y, size=0.8, seed=0):
     """
@@ -78,4 +80,20 @@ def grid_search(hypers: dict):
     res = []
     rec_grid_search(list(hypers.items()), 0, res, {})
     return res
+
+
+def plotROC(llrs, lab, n_trys=100):
+    TPR = []
+    FPR = []
+    index = 0
+    llrs_bet = llrs[np.logical_and(llrs > np.median(llrs) - 5, llrs < np.median(llrs) + 5)]
+    for i in np.linspace(min(llrs_bet), max(llrs_bet), n_trys):
+        pred = np.where(llrs > i, 1, 0)
+        conf = pr.getConfusionMatrix2(pred, lab)
+        TPR.insert(index, conf[1, 1] / (conf[0, 1] + conf[1, 1]))
+        FPR.insert(index, conf[1, 0] / (conf[0, 0] + conf[1, 0]))
+        index += 1
+    plt.grid()
+    plt.plot(np.array(FPR), np.array(TPR))
+    return
 

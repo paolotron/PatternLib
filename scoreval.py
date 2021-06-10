@@ -1,16 +1,17 @@
 import re
 
 import numpy as np
+from matplotlib import pyplot as plt
 
 from tiblib.probability import minDetectionCost, getConfusionMatrix2
-from tiblib.validation import confusion_matrix
+from tiblib.validation import confusion_matrix, plotROC
 
 
 def score_eval():
     labels = np.load("result/final/labels.npy").astype("int32")
     scores = np.load("result/final/scores.npy")
     pipe = np.load("result/final/pipe.npy")
-
+    '''
     x = np.array([1, 1, 1, 0]).astype("bool")
     y = np.array([1, 0, 1, 0]).astype("bool")
     p1 = confusion_matrix(x, y)
@@ -18,13 +19,37 @@ def score_eval():
     precision = 3
     for pip, score, label in zip(pipe, scores, labels):
         s: str = pip[0]
-        if s.startswith("StandardScaler()->LDA(n_feat=6)"):
+        if s.startswith("StandardScaler()->SVM"):
             print(pip)
             mindcf1, _ = minDetectionCost(score, label, 1000, 0.5)
             mindcf2, _ = minDetectionCost(score, label, 1000, 0.1)
             mindcf3, _ = minDetectionCost(score, label, 1000, 0.9)
             print(f"& {round(mindcf1, precision)} & {round(mindcf2, precision)} & {round(mindcf3, precision)} \\\\")
+    '''
 
+def plot():
+    labels = np.load("result/final/labels.npy").astype("int32")
+    scores = np.load("result/final/scores.npy")
+    pipe = np.load("result/final/pipe.npy")
 
+    fig, ax = plt.subplots()
+    plt.grid()
+    for pip, score, label in zip(pipe, scores, labels):
+        s: str = pip[0]
+        if s.startswith("StandardScaler()->LDA(n_feat=6)->LogisticRegression(norm=0.1)"):
+            print(pip)
+            plotROC(score, label, 1000)
+        if s.startswith("StandardScaler()->LDA(n_feat=6)->SVM(kernel=Polynomial, C=1, regularization=0, d=2, c=1)"):
+            print(pip)
+            plotROC(score, label, 1000)
+        if s.startswith("StandardScaler()->LDA(n_feat=6)->TiedGaussian()"):
+            print(pip)
+            plotROC(score, label, 1000)
+        if s.startswith("StandardScaler()->LDA(n_feat=6)->TiedCovarianceGMM(alpha=0.1, N=4"):
+            print(pip)
+            plotROC(score, label, 1000)
+    plt.show()
 if __name__ == "__main__":
-    score_eval()
+    # score_eval()
+    plot()
+
