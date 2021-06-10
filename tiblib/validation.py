@@ -82,7 +82,7 @@ def grid_search(hypers: dict):
     return res
 
 
-def plotROC(llrs, lab, n_trys=100):
+def plotROC(llrs, lab, n_trys=100, name=None):
     TPR = []
     FPR = []
     index = 0
@@ -94,6 +94,6 @@ def plotROC(llrs, lab, n_trys=100):
         FPR.insert(index, conf[1, 0] / (conf[0, 0] + conf[1, 0]))
         index += 1
     plt.grid()
-    plt.plot(np.array(FPR), np.array(TPR))
+    plt.plot(np.array(FPR), np.array(TPR), label=name)
     return
 

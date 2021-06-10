@@ -32,22 +32,22 @@ def plot():
     scores = np.load("result/final/scores.npy")
     pipe = np.load("result/final/pipe.npy")
 
-    fig, ax = plt.subplots()
     plt.grid()
+    plt.xlabel('FPR')
+    plt.ylabel('TPR')
+
     for pip, score, label in zip(pipe, scores, labels):
         s: str = pip[0]
         if s.startswith("StandardScaler()->LDA(n_feat=6)->LogisticRegression(norm=0.1)"):
             print(pip)
-            plotROC(score, label, 1000)
+            plotROC(score, label, 1000, "Logistic Regression")
         if s.startswith("StandardScaler()->LDA(n_feat=6)->SVM(kernel=Polynomial, C=1, regularization=0, d=2, c=1)"):
             print(pip)
-            plotROC(score, label, 1000)
-        if s.startswith("StandardScaler()->LDA(n_feat=6)->TiedGaussian()"):
-            print(pip)
-            plotROC(score, label, 1000)
+            plotROC(score, label, 1000, "SVM Polynomial")
         if s.startswith("StandardScaler()->LDA(n_feat=6)->TiedCovarianceGMM(alpha=0.1, N=4"):
             print(pip)
-            plotROC(score, label, 1000)
+            plotROC(score, label, 1000, "Tied Covariance GMM")
+    plt.legend()
     plt.show()
 if __name__ == "__main__":
     # score_eval()
