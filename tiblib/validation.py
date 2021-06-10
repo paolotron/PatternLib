@@ -93,7 +93,6 @@ def plotROC(llrs, lab, n_trys=100, name=None):
         TPR.insert(index, conf[1, 1] / (conf[0, 1] + conf[1, 1]))
         FPR.insert(index, conf[1, 0] / (conf[0, 0] + conf[1, 0]))
         index += 1
-    plt.grid()
     plt.plot(np.array(FPR), np.array(TPR), label=name)
     return
 
