@@ -1,18 +1,13 @@
 import os
+from datetime import datetime
 from typing import List
 
 import numpy as np
-import matplotlib.pyplot as plt
 
-import tiblib.Classifier
-import tiblib.pipeline as pip
-import tiblib.probability as prob
-import tiblib.validation as val
 import tiblib.Classifier as cl
+import tiblib.pipeline as pip
 import tiblib.preproc as prep
-from tiblib.blueprint import Faucet
-from tiblib.preproc import StandardScaler
-from datetime import datetime
+import tiblib.validation as val
 
 save_logs = True
 all_scores = []
@@ -32,6 +27,9 @@ attributes = [
 
 
 def get_pulsar_data(path_train="Data/Train.txt", path_test="Data/Test.txt", labels=False):
+    """
+    Get all pulsar data and divide into labels
+    """
     train_data = np.loadtxt(path_train, delimiter=",")
     test_data = np.loadtxt(path_test, delimiter=",")
     if labels:
@@ -40,21 +38,10 @@ def get_pulsar_data(path_train="Data/Train.txt", path_test="Data/Test.txt", labe
         return train_data, test_data
 
 
-def test_random_models():
-    train, train_labels, test, test_labels = get_pulsar_data(labels=True)
-    model: Faucet
-    whitener = StandardScaler()
-    whitener.fit(train, None)
-    for model in (cl.LogisticRegression(norm_coeff=0.1), cl.GaussianClassifier(), cl.TiedGaussian(), cl.NaiveBayes(),
-                  cl.GaussianMixture(alpha=0.1), cl.SVM(ker="Poly", paramker=[2, 1])):
-        model.fit(whitener.transform(train), train_labels)
-        prediction = model.predict(whitener.transform(test))
-        err_rate = val.err_rate(prediction, test_labels)
-        print(f"Model: {type(model).__name__}\n\tError rate:", "{:.4f}".format(err_rate))
-        _ = val.confusion_matrix(prediction, test_labels, print_cm=True)
-
-
 def kfold_test():
+    """
+    Test all models with kfold strategy
+    """
     train, train_labels, test, test_labels = get_pulsar_data(labels=True)
     pipe_list: List[pip.Pipeline]
     preprocessing_pipe_list = [
@@ -103,6 +90,9 @@ def kfold_test():
 
 
 def test_model(pipe: pip.Pipeline, mod, hyper: dict, train: np.ndarray, train_labels: np.ndarray):
+    """
+    KFold wrapper
+    """
     model = mod(**hyper if hyper else {})
     pipe.add_step(model)
     err_rate = k_test(pipe, train, train_labels, 5)
@@ -111,6 +101,9 @@ def test_model(pipe: pip.Pipeline, mod, hyper: dict, train: np.ndarray, train_la
 
 
 def k_test(pipe, train, train_labels, K):
+    """
+    Kfold on model and save scores and labels into files
+    """
     err_rate = 0
     scores = np.empty((0,), float)
     labels = np.empty((0,), int)
