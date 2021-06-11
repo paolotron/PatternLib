@@ -27,6 +27,7 @@ def score_eval():
             print(f"& {round(mindcf1, precision)} & {round(mindcf2, precision)} & {round(mindcf3, precision)} \\\\")
     '''
 
+
 def plot():
     labels = np.load("result/final/labels.npy").astype("int32")
     scores = np.load("result/final/scores.npy")
@@ -49,6 +50,8 @@ def plot():
             plotROC(score, label, 1000, "Tied Covariance GMM")
     plt.legend()
     plt.show()
+
+
 if __name__ == "__main__":
     # score_eval()
     plot()

@@ -137,6 +137,8 @@ def LGB_estimation(X, alpha: float, n: int, *, posterior=1., psi=None, tied=Fals
 
 
 def getConfusionMatrix2(predictions, labels):
+    predictions = predictions.astype("bool")
+    labels = labels.astype("bool")
     conf = np.zeros((2, 2), dtype=int)
     conf[1, 1] = np.sum(predictions & labels)
     conf[0, 0] = np.sum((~predictions) & (~labels))
