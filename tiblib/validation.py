@@ -82,12 +82,12 @@ def grid_search(hypers: dict):
     return res
 
 
-def plotROC(llrs, lab, n_trys=100, name=None):
+def plotROC(llrs, lab, step=0.1, name=None):
     TPR = []
     FPR = []
     index = 0
-    llrs_bet = llrs[np.logical_and(llrs > np.median(llrs) - 5, llrs < np.median(llrs) + 5)]
-    for i in np.linspace(min(llrs_bet), max(llrs_bet), n_trys):
+    #llrs_bet = llrs[np.logical_and(llrs > np.median(llrs) - 5, llrs < np.median(llrs) + 5)]
+    for i in np.arange(min(llrs), max(llrs), step):
         pred = np.where(llrs > i, 1, 0)
         conf = pr.getConfusionMatrix2(pred, lab)
         TPR.insert(index, conf[1, 1] / (conf[0, 1] + conf[1, 1]))
