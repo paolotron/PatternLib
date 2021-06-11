@@ -39,18 +39,20 @@ def plot():
 
     for pip, score, label in zip(pipe, scores, labels):
         s: str = pip[0]
+        #plt.plot([0, 0], [1, 1], 'k-')
+
         if s.startswith("StandardScaler()->LDA(n_feat=6)->LogisticRegression(norm=0.1)"):
             print(pip)
-            plotROC(score, label, 0.1, "Logistic Regression")
+            plotROC(score, label, "Logistic Regression")
         if s.startswith("StandardScaler()->LDA(n_feat=6)->SVM(kernel=Polynomial, C=1, regularization=0, d=2, c=1)"):
             print(pip)
-            plotROC(score, label, 0.1, "SVM Polynomial")
+            plotROC(score, label, "SVM Polynomial")
         if s.startswith("StandardScaler()->LDA(n_feat=6)->TiedCovarianceGMM(alpha=0.1, N=4"):
             print(pip)
-            plotROC(score, label, 0.1, "Tied Covariance GMM")
+            plotROC(score, label, "Tied Covariance GMM")
         if s.startswith("StandardScaler()->LDA(n_feat=6)->TiedG"):
             print(pip)
-            plotROC(score, label, 0.1, "Tied Gaussian")
+            plotROC(score, label, "Tied Gaussian")
     plt.legend()
     plt.show()
 
