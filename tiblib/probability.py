@@ -165,9 +165,7 @@ def minDetectionCost(llrs, lab, n_trys=100, Cfn=1, Cfp=1, pi1=0.5):
     llrs_bet = llrs[np.logical_and(llrs > np.median(llrs)-5, llrs < np.median(llrs)+5)]
     for i in np.linspace(min(llrs_bet), max(llrs_bet), n_trys):
         pred = np.where(llrs > i, True, False)
-        conf1 = getConfusionMatrix2(pred, lab)
         conf = getConfusionMatrix2(pred, lab)
-
         r = normalizedBayesRisk(conf, Cfn=Cfn, Cfp=Cfp, pi1=pi1)
         if min_dcf > r:
             min_dcf = r

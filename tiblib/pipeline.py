@@ -1,5 +1,7 @@
 from typing import List
 
+import numpy as np
+
 from .blueprint import Pipe
 from .blueprint import Faucet
 
@@ -59,3 +61,26 @@ class Pipeline:
 
     def __str__(self):
         return ''.join([i.__str__() + "->" for i in self.steps])[:-2]
+
+
+class Jointer(Pipe):
+
+    def __init__(self, model_list: List[Faucet]):
+        self.joints = model_list
+
+    def fit(self, x, y):
+        for pip in self.joints:
+            pip.fit(x, y)
+
+    def transform(self, x):
+        res = []
+        for pip in self.joints:
+            res.append(pip.predict(x, return_prob=True)[1].reshape(1, -1))
+        return np.vstack(res).T
+
+    def fit_transform(self, x, y):
+        self.fit(x, y)
+        return self.transform(x)
+
+    def __str__(self):
+        return "Joint[" + "".join([step.__str__() for step in self.joints]) + "]"

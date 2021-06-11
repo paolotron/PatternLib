@@ -53,7 +53,9 @@ def plot():
         if s.startswith("StandardScaler()->LDA(n_feat=6)->TiedG"):
             print(pip)
             plotROC(score, label, "Tied Gaussian")
+    plt.plot(np.array([[0, 0], [1, 1]]))
     plt.legend()
+    plt.savefig("images/ROC.eps", format='eps')
     plt.show()
 
 
