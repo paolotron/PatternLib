@@ -4,7 +4,7 @@ import tiblib.Classifier as cl
 from modeleval import get_pulsar_data
 from tiblib.pipeline import Pipeline, Jointer
 from tiblib.preproc import StandardScaler, Lda
-from tiblib.probability import minDetectionCost
+from tiblib.probability import minDetectionCost, getConfusionMatrix2, normalizedBayesRisk
 from tiblib.validation import grid_search, kfold_split, err_rate
 
 
@@ -46,5 +46,28 @@ def testjoint():
     np.save("result/jointResults/jointscores", labels_f)
 
 
+def test_final():
+    train, train_labels, test, test_labels = get_pulsar_data(labels=True)
+    thresh = -2.4107759457753977
+    pip = Pipeline([StandardScaler(),
+                    Lda(n_dim=6),
+                    Jointer([
+                        cl.TiedGaussian(),
+                        cl.GaussianMixture(alpha=0.1, N=2, tied=True),
+                        cl.LogisticRegression(norm_coeff=0.1),
+                        cl.SVM(c=1, k=0, ker='Poly', paramker=[2, 1])
+                    ]),
+                    StandardScaler(),
+                    cl.LogisticRegression(norm_coeff=0.1)
+                    ])
+    pip.fit(train, train_labels)
+    comp_labels = pip.predict(test, return_prob=True)[1]
+    pred = np.where(comp_labels > thresh, True, False)
+    conf = getConfusionMatrix2(pred, test_labels)
+    r = normalizedBayesRisk(conf, Cfn=1, Cfp=1, pi1=.5)
+    print(r)
+    print(conf)
+
+
 if __name__ == "__main__":
-    testjoint()
+    test_final()

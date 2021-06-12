@@ -6,17 +6,13 @@ from matplotlib import pyplot as plt
 from tiblib.probability import minDetectionCost, getConfusionMatrix2
 from tiblib.validation import confusion_matrix, plotROC
 
+precision = 4
+
 
 def score_eval():
     labels = np.load("result/final/labels.npy").astype("int32")
     scores = np.load("result/final/scores.npy")
     pipe = np.load("result/final/pipe.npy")
-    '''
-    x = np.array([1, 1, 1, 0]).astype("bool")
-    y = np.array([1, 0, 1, 0]).astype("bool")
-    p1 = confusion_matrix(x, y)
-    p2 = getConfusionMatrix2(x, y)
-    precision = 3
     for pip, score, label in zip(pipe, scores, labels):
         s: str = pip[0]
         if s.startswith("StandardScaler()->SVM"):
@@ -25,7 +21,16 @@ def score_eval():
             mindcf2, _ = minDetectionCost(score, label, 1000, 0.1)
             mindcf3, _ = minDetectionCost(score, label, 1000, 0.9)
             print(f"& {round(mindcf1, precision)} & {round(mindcf2, precision)} & {round(mindcf3, precision)} \\\\")
-    '''
+
+
+def joint_score_eval():
+    scores = np.load("result/jointResults/jointscores.npy")
+    labels = np.load("result/jointResults/jointlabels.npy")
+    for score, label in zip(scores, labels):
+        mindcf1, _ = minDetectionCost(score, label, 10000, 0.5)
+        mindcf2, _ = minDetectionCost(score, label, 10000, 0.1)
+        mindcf3, _ = minDetectionCost(score, label, 10000, 0.9)
+        print(f"& {round(mindcf1, precision)} & {round(mindcf2, precision)} & {round(mindcf3, precision)} \\\\")
 
 
 def plot():
@@ -53,6 +58,9 @@ def plot():
         if s.startswith("StandardScaler()->LDA(n_feat=6)->TiedG"):
             print(pip)
             plotROC(score, label, "Tied Gaussian")
+    scores = np.load("result/jointResults/jointscores.npy")
+    labels = np.load("result/jointResults/jointlabels.npy")
+    plotROC(scores[0], labels[0], "JointModel")
     plt.plot(np.array([[0, 0], [1, 1]]))
     plt.legend()
     plt.savefig("images/ROC.eps", format='eps')
@@ -60,6 +68,6 @@ def plot():
 
 
 if __name__ == "__main__":
-    # score_eval()
+    joint_score_eval()
     plot()
 

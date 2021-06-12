@@ -52,7 +52,8 @@ class Pipeline:
             if isinstance(step, Pipe):
                 temp_x = step.transform(temp_x)
             if isinstance(step, Faucet):
-                return step.predict(temp_x, return_prob)
+                t = step.predict(temp_x, return_prob)
+                return t
         return temp_x
 
     def fit_predict(self, x, y):
