@@ -135,6 +135,6 @@ if __name__ == "__main__":
     if save_logs:
         os.mkdir(logfile)
     kfold_test()
-    print("Finito")
+
 
 

@@ -1,10 +1,8 @@
-import re
-
 import numpy as np
 from matplotlib import pyplot as plt
 
-from tiblib.probability import minDetectionCost, getConfusionMatrix2
-from tiblib.validation import confusion_matrix, plotROC
+from tiblib.probability import minDetectionCost
+from tiblib.validation import plotROC
 
 precision = 4
 
@@ -33,7 +31,7 @@ def joint_score_eval():
         print(f"& {round(mindcf1, precision)} & {round(mindcf2, precision)} & {round(mindcf3, precision)} \\\\")
 
 
-def plot():
+def plotROCscores():
     labels = np.load("result/final/labels.npy").astype("int32")
     scores = np.load("result/final/scores.npy")
     pipe = np.load("result/final/pipe.npy")
@@ -44,7 +42,6 @@ def plot():
 
     for pip, score, label in zip(pipe, scores, labels):
         s: str = pip[0]
-        #plt.plot([0, 0], [1, 1], 'k-')
 
         if s.startswith("StandardScaler()->LDA(n_feat=6)->LogisticRegression(norm=0.1)"):
             print(pip)
@@ -66,8 +63,4 @@ def plot():
     plt.savefig("images/ROC.eps", format='eps')
     plt.show()
 
-
-if __name__ == "__main__":
-    joint_score_eval()
-    plot()
 

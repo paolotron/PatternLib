@@ -3,6 +3,7 @@ from matplotlib import pyplot as plt
 
 import tiblib.probability as pr
 
+
 def train_test_split(x, y, size=0.8, seed=0):
     """
     Train, Test split to asses scores of models
@@ -86,7 +87,6 @@ def plotROC(llrs, lab, name=None):
     TPR = []
     FPR = []
     index = 0
-    #llrs_bet = llrs[np.logical_and(llrs > np.median(llrs) - 5, llrs < np.median(llrs) + 5)]
     llrs_sort = np.sort(llrs)
     for i in llrs_sort:
         pred = np.where(llrs > i+0.000001, 1, 0)

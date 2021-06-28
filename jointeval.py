@@ -8,7 +8,10 @@ from tiblib.probability import minDetectionCost, getConfusionMatrix2, normalized
 from tiblib.validation import grid_search, kfold_split, err_rate
 
 
-def testjoint():
+def evaluatejoint():
+    """
+    Hyper parameter tuning and threshold calibration for the joint model
+    """
     train, train_labels, test, test_labels = get_pulsar_data(labels=True)
     scores_f = []
     labels_f = []
@@ -47,6 +50,9 @@ def testjoint():
 
 
 def test_final():
+    """
+    Test the chosen model and compute the DCF on the test set, this is the final evaluation for the project
+    """
     train, train_labels, test, test_labels = get_pulsar_data(labels=True)
     thresh = -2.4107759457753977
     pip = Pipeline([StandardScaler(),
