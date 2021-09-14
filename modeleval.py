@@ -46,9 +46,11 @@ def kfold_test():
     pipe_list: List[pip.Pipeline]
     preprocessing_pipe_list = [
         pip.Pipeline([prep.StandardScaler()]),
-        pip.Pipeline([prep.StandardScaler(), prep.Lda(train.shape[1] - 2)]),
+        pip.Pipeline([prep.StandardScaler(), prep.Pca(7)]),
+        pip.Pipeline([prep.StandardScaler(), prep.Pca(6)]),
+        pip.Pipeline([prep.StandardScaler(), prep.Pca(5)]),
+        pip.Pipeline([prep.StandardScaler(), prep.Pca(4)]),
     ]
-    K = 5
 
     # Gaussian
     for pipe in preprocessing_pipe_list:
@@ -65,7 +67,7 @@ def kfold_test():
             test_model(pipe, cl.LogisticRegression, hyper, train, train_labels)
     #   SVM no kern
     for pipe in preprocessing_pipe_list:
-        for hyper in val.grid_search({'c': [0.1, 1, 10], 'k': [1, 10], 'ker': [None]}):
+        for hyper in val.grid_search({'c': [0.1, 1, 5, 10], 'k': [1, 10], 'ker': [None]}):
             test_model(pipe, cl.SVM, hyper, train, train_labels)
     #   SVM Poly
     for pipe in preprocessing_pipe_list:

@@ -1,8 +1,9 @@
 import numpy as np
 from matplotlib import pyplot as plt
-
+import tiblib.pipeline as pip
+from typing import List
 import tiblib.preproc
-from main import get_pulsar_data, attributes
+from modeleval import get_pulsar_data, attributes
 
 
 def plot_data_exploration(save=False):
@@ -65,10 +66,50 @@ def plot_outliers(save=False):
     else:
         fig.savefig('images/zscore.eps', format='eps')
 
+def plot_LDA(raw=True, lda=True):
+    train, train_labels, test, test_labels = get_pulsar_data(labels=True)
+    if raw:
+        fig, ax = plt.subplots(8,8,figsize=(50,50))
+        fig.suptitle('Raw Data')
+        for i in range(train.shape[1]):
+            for j in range(train.shape[1]):
+                # plt.figure()
+                # plt.grid()
+                # title = "Raw data: attributes " + str(i) + " and  " + str(j)
+                # plt.title(title)
+                # plt.plot(train[train_labels==0, i], train[train_labels==0, j], 'o')
+                # plt.plot(train[train_labels == 1, i], train[train_labels == 1, j], 'o')
+                # plt.show()
+                title = "Attributes " + str(i) + " and  " + str(j)
+                ax[i, j].set_title(title)
+                ax[i, j].plot(train[train_labels==0, i], train[train_labels==0, j], 'o')
+                ax[i, j].plot(train[train_labels==1, i], train[train_labels==1, j], 'o')
+        fig.show()
 
+    if lda:
+        train_LDA = tiblib.preproc.Lda(n_dim=train.shape[1] - 2).fit_transform(train, train_labels)
+
+        fig2, ay = plt.subplots(train_LDA.shape[1], train_LDA.shape[1], figsize=(50, 50))
+        fig2.suptitle('Lda Data')
+        for i in range(train_LDA.shape[1]):
+            for j in range(train_LDA.shape[1]):
+                # if i != j and i > j:
+                    # plt.figure()
+                    # plt.grid()
+                    # title = "LDA data: attributes " + str(i) + " and  " + str(j)
+                    # plt.title(title)
+                    # plt.plot(train_LDA[train_labels==0, i], train_LDA[train_labels==0, j], 'o')
+                    # plt.plot(train_LDA[train_labels==1, i], train_LDA[train_labels==1, j], 'o')
+                    # plt.show()
+                title = "Attributes " + str(i) + " and  " + str(j)
+                ay[i, j].set_title(title)
+                ay[i, j].plot(train_LDA[train_labels == 0, i], train_LDA[train_labels == 0, j], 'o')
+                ay[i, j].plot(train_LDA[train_labels == 1, i], train_LDA[train_labels == 1, j], 'o')
+        fig2.show()
 if __name__ == "__main__":
     # print_stats(latek=True)
     # print_label_stats()
     # plot_data_exploration()
     # plot_covariance()
-    plot_outliers(save=True)
+    # plot_outliers(save=True)
+    plot_LDA(False, True)

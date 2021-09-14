@@ -16,7 +16,7 @@ def evaluatejoint():
     scores_f = []
     labels_f = []
     pip = Pipeline([StandardScaler(),
-                    Lda(n_dim=6),
+                    Lda(n_dim=4),
                     Jointer([
                         cl.TiedGaussian(),
                         cl.GaussianMixture(alpha=0.1, N=2, tied=True),
@@ -45,8 +45,8 @@ def evaluatejoint():
         print(err_r / 5)
         pip.rem_step()
         print(f"{round(m1, 3)} & {round(m2, 3)} & {round(m3, 3)}")
-    np.save("result/jointResults/jointlabels", scores_f)
-    np.save("result/jointResults/jointscores", labels_f)
+    np.save("result/jointResults2/jointlabels", scores_f)
+    np.save("result/jointResults2/jointscores", labels_f)
 
 
 def test_final():
@@ -56,7 +56,7 @@ def test_final():
     train, train_labels, test, test_labels = get_pulsar_data(labels=True)
     thresh = -2.4107759457753977
     pip = Pipeline([StandardScaler(),
-                    Lda(n_dim=6),
+                    Lda(n_dim=4),
                     Jointer([
                         cl.TiedGaussian(),
                         cl.GaussianMixture(alpha=0.1, N=2, tied=True),

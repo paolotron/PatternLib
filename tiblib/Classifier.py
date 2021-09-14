@@ -221,7 +221,7 @@ class LogisticRegression(Faucet):
 
 class SVM(Faucet):
 
-    def __init__(self, k=1, c=1, ker=None, paramker=None):
+    def __init__(self, k=10, c=10, ker=None, paramker=None):
         self.C = c
         self.K = k
         self.W = None
@@ -237,6 +237,7 @@ class SVM(Faucet):
         self.alpha = None
 
     def fit(self, x, y):
+
         self.x = x.T
         DTR = x.T
         z = np.where(y == 1, 1, -1)
@@ -245,8 +246,10 @@ class SVM(Faucet):
 
         x0 = np.zeros(DTR.shape[1])
         bounds = [(0, self.C) for _ in range(DTR.shape[1])]
-
-        G = self.kernel(DTR, DTR)
+        if self.ker is None:
+            G = self.kernel(DTRc, DTRc)
+        else:
+            G = self.kernel(DTR, DTR)
         H = G * z.reshape(z.shape[0], 1)
         H = H * z
 
@@ -257,7 +260,7 @@ class SVM(Faucet):
             grad = H @ a - np.ones(a.shape)
             return J1 + J2, grad.reshape(DTRc.shape[1])
 
-        m, self.primal, _ = fmin_l_bfgs_b(SVM_dual_kernel_obj, x0, bounds=bounds)
+        m, self.primal, _ = fmin_l_bfgs_b(SVM_dual_kernel_obj, x0, bounds=bounds, factr=1)
         self.alpha = m
         res = np.sum(m * z.T * DTRc, axis=1)
         self.W = res[:-1]
@@ -268,12 +271,12 @@ class SVM(Faucet):
         if self.ker is None:
             return xi.T @ xj
         if self.ker == "Poly":
-            return np.power(xi.T @ xj + self.paramker[1], self.paramker[0]) + self.K ** 2
+            return np.power(xi.T @ xj + self.paramker[1], self.paramker[0]) + self.K
         if self.ker == "Radial":
             a = np.repeat(xi, xj.shape[1], axis=1)
             b = np.tile(xj, xi.shape[1])
             m = (np.linalg.norm(a - b, axis=0) ** 2).reshape((xi.shape[1], xj.shape[1]))
-            return np.exp(-self.paramker[0] * m) + self.K**2
+            return np.exp(-self.paramker[0] * m) + self.K
 
     def predict(self, x, return_prob=False):
         if self.ker is None:

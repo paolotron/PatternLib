@@ -2,15 +2,16 @@ import numpy as np
 from matplotlib import pyplot as plt
 
 from tiblib.probability import minDetectionCost
+from tiblib.probability import normalizedBayesRisk
 from tiblib.validation import plotROC
 
-precision = 4
+precision = 3
 
 
 def score_eval():
-    labels = np.load("result/final/labels.npy").astype("int32")
-    scores = np.load("result/final/scores.npy")
-    pipe = np.load("result/final/pipe.npy")
+    labels = np.load("result/final2/labels.npy").astype("int32")
+    scores = np.load("result/final2/scores.npy")
+    pipe = np.load("result/final2/pipe.npy")
     for pip, score, label in zip(pipe, scores, labels):
         s: str = pip[0]
         if s.startswith("StandardScaler()->SVM"):
@@ -63,4 +64,5 @@ def plotROCscores():
     plt.savefig("images/ROC.eps", format='eps')
     plt.show()
 
-
+if __name__ == "__main__":
+    score_eval()
