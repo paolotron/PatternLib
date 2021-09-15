@@ -14,7 +14,7 @@ def score_eval():
     pipe = np.load("result/final2/pipe.npy")
     for pip, score, label in zip(pipe, scores, labels):
         s: str = pip[0]
-        if s.startswith("StandardScaler()->SVM"):
+        if s.startswith("StandardScaler()->GMM"):
             print(pip)
             mindcf1, _ = minDetectionCost(score, label, 1000, 0.5)
             mindcf2, _ = minDetectionCost(score, label, 1000, 0.1)
@@ -23,8 +23,8 @@ def score_eval():
 
 
 def joint_score_eval():
-    scores = np.load("result/jointResults/jointscores.npy")
-    labels = np.load("result/jointResults/jointlabels.npy")
+    scores = np.load("result/jointResults2/jointscores.npy")
+    labels = np.load("result/jointResults2/jointlabels.npy")
     for score, label in zip(scores, labels):
         mindcf1, _ = minDetectionCost(score, label, 10000, 0.5)
         mindcf2, _ = minDetectionCost(score, label, 10000, 0.1)
@@ -33,32 +33,37 @@ def joint_score_eval():
 
 
 def plotROCscores():
-    labels = np.load("result/final/labels.npy").astype("int32")
-    scores = np.load("result/final/scores.npy")
-    pipe = np.load("result/final/pipe.npy")
-
+    labels = np.load("result/final2/labels.npy").astype("int32")
+    scores = np.load("result/final2/scores.npy")
+    pipe = np.load("result/final2/pipe.npy")
+    labelsSVM = np.load("result/SVMfinal2/labels.npy").astype("int32")
+    scoresSVM = np.load("result/SVMfinal2/scores.npy")
+    pipeSVM = np.load("result/SVMfinal2/pipe.npy")
     plt.grid()
     plt.xlabel('FPR')
     plt.ylabel('TPR')
 
     for pip, score, label in zip(pipe, scores, labels):
         s: str = pip[0]
-
-        if s.startswith("StandardScaler()->LDA(n_feat=6)->LogisticRegression(norm=0.1)"):
-            print(pip)
-            plotROC(score, label, "Logistic Regression")
-        if s.startswith("StandardScaler()->LDA(n_feat=6)->SVM(kernel=Polynomial, C=1, regularization=0, d=2, c=1)"):
-            print(pip)
-            plotROC(score, label, "SVM Polynomial")
-        if s.startswith("StandardScaler()->LDA(n_feat=6)->TiedCovarianceGMM(alpha=0.1, N=4"):
+        if s.startswith("StandardScaler()->PCA(n_feat=7)->TiedCovarianceGMM(alpha=0.1, N=4"):
             print(pip)
             plotROC(score, label, "Tied Covariance GMM")
-        if s.startswith("StandardScaler()->LDA(n_feat=6)->TiedG"):
+        if s.startswith("StandardScaler()->PCA(n_feat=7)->TiedG"):
             print(pip)
             plotROC(score, label, "Tied Gaussian")
-    scores = np.load("result/jointResults/jointscores.npy")
-    labels = np.load("result/jointResults/jointlabels.npy")
-    plotROC(scores[0], labels[0], "JointModel")
+        if s.startswith("StandardScaler()->PCA(n_feat=7)->SVM(kernel=Linear, C=0.5, regularization=5)"):
+            print(pip)
+            plotROC(score, label, "SVM Linear")
+
+    for pip, score, label in zip(pipeSVM, scoresSVM, labelsSVM):
+        s: str = pip[0]
+        if s.startswith("StandardScaler()->PCA(n_feat=7)->SVM(kernel=Radial, C=10, regularization=1, gamma=0.05)"):
+            print(pip)
+            plotROC(score, label, "SVM Radial")
+
+    # scores = np.load("result/jointResults2/jointscores.npy")
+    # labels = np.load("result/jointResults2/jointlabels.npy")
+    # plotROC(scores[0], labels[0], "JointModel")
     plt.plot(np.array([[0, 0], [1, 1]]))
     plt.legend()
     plt.savefig("images/ROC.eps", format='eps')

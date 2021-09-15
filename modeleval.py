@@ -67,15 +67,15 @@ def kfold_test():
             test_model(pipe, cl.LogisticRegression, hyper, train, train_labels)
     #   SVM no kern
     for pipe in preprocessing_pipe_list:
-        for hyper in val.grid_search({'c': [0.1, 1, 5, 10], 'k': [1, 10], 'ker': [None]}):
+        for hyper in val.grid_search({'c': [0.1, 1, 5, 10], 'k': [1, 5], 'ker': [None]}):
             test_model(pipe, cl.SVM, hyper, train, train_labels)
     #   SVM Poly
     for pipe in preprocessing_pipe_list:
-        for hyper in val.grid_search({'c': [1], 'k': [0, 1], 'ker': ['Poly'], 'paramker': [[2, 0], [2, 1]]}):
+        for hyper in val.grid_search({'c': [0.5, 1], 'k': [0, 1], 'ker': ['Poly'], 'paramker': [[2, 1]]}):
             test_model(pipe, cl.SVM, hyper, train, train_labels)
     #   SVM Radial
     for pipe in preprocessing_pipe_list:
-        for hyper in val.grid_search({'c': [1], 'k': [0, 1], 'ker': ['Radial'], 'paramker': [[1], [10]]}):
+        for hyper in val.grid_search({'c': [1, 10], 'k': [1], 'ker': ['Radial'], 'paramker': [[0.05], [0.1]]}):
             test_model(pipe, cl.SVM, hyper, train, train_labels)
     #   Gaussian Mixture tied
     for pipe in preprocessing_pipe_list:

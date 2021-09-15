@@ -260,7 +260,7 @@ class SVM(Faucet):
             grad = H @ a - np.ones(a.shape)
             return J1 + J2, grad.reshape(DTRc.shape[1])
 
-        m, self.primal, _ = fmin_l_bfgs_b(SVM_dual_kernel_obj, x0, bounds=bounds, factr=1)
+        m, self.primal, _ = fmin_l_bfgs_b(SVM_dual_kernel_obj, x0, bounds=bounds)
         self.alpha = m
         res = np.sum(m * z.T * DTRc, axis=1)
         self.W = res[:-1]
