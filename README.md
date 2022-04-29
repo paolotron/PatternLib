@@ -1,4 +1,4 @@
-## Machine Learning and Pattern Recognition Progect
+## Machine Learning and Pattern Recognition Project
 Authors: Paolo Rabino, Matteo Ferrenti
 
 ### PatternLib Structure
